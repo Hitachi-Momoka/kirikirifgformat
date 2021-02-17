@@ -2,14 +2,8 @@
 using Prism.Commands;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.IO;
 using System.Windows.Media;
-using Li.Drawing;
+using System.Windows.Media.Imaging;
 using Li.Krkr.krkrfgformatWPF.Servises;
 using Li.Krkr.krkrfgformatWPF.Models;
 
@@ -23,15 +17,13 @@ namespace Li.Krkr.krkrfgformatWPF.ViewModes
         //public DelegateCommand SideOnlyCommand { get; set; }
         public DelegateCommand HelpButtonCommand { set; get; }
         public DelegateCommand SelectRulePathCommand { get; set; }
-        public DelegateCommand SelectSavePathcommand { get; set; }
+        public DelegateCommand SelectSavePathCommand { get; set; }
         public DelegateCommand FormatSelectedCommand { get; set; }
-        public DelegateCommand OpenSaveFloderCommand { get; set; }
+        public DelegateCommand OpenSaveFolderCommand { get; set; }
         #endregion
 
         #region Mumber
-        private bool canUpData;
         private bool messageBoxIsShow;
-        private bool isClearing;
         
         private SelectedItemWithIndexModel _selectItemTmp;
 
@@ -41,27 +33,28 @@ namespace Li.Krkr.krkrfgformatWPF.ViewModes
             set
             {
                 _selectItemTmp = value;
-                if (string.IsNullOrEmpty(RulePath))
+                if (string.IsNullOrEmpty(RulePath) && this.SelectItemTmp != null)
                 {
                     RulePath = GetRulePath(SelectItemTmp.SelectedItem.ToString());
-                    SavePath = CreatDefultSavePath(SelectItemTmp.SelectedItem.ToString());
+                    SavePath = CreateDefaultSavePath(SelectItemTmp.SelectedItem.ToString());
                 }
-                UpDataAllSelectedItems(SelectItemTmp);
+                UpDataAllItems(SelectItemTmp);
                 base.RaisePropertyChanged();
             }
         }
 
+        private SortedDictionary<int,Tuple<string,BitmapSource>> _allItems;
 
-        private ObservableCollection<SelectedItemWithIndexModel> _allSelectedItems;
-        public ObservableCollection<SelectedItemWithIndexModel> AllSelectedItems
+        public SortedDictionary<int, Tuple<string, BitmapSource>> AllItems
         {
-            get => _allSelectedItems;
-            set
+            get { return _allItems; }
+            set 
             {
-                _allSelectedItems = value;
-                base.RaisePropertyChanged();
+                _allItems = value;
+                this.UpdateImage();
             }
         }
+
         private string _rulePath;
 
         public string RulePath
@@ -107,7 +100,8 @@ namespace Li.Krkr.krkrfgformatWPF.ViewModes
             {
                 _isSideOnly = value;
                 base.RaisePropertyChanged();
-                this.CollectionChanged(null, null);//选择状态变化就引起一次合成刷新。
+                UpdateImage();
+                //this.CollectionChanged(null,null);//选择状态变化就引起一次合成刷新。
             }
         }
         private ImageSource _imageBoxSource;
@@ -121,6 +115,7 @@ namespace Li.Krkr.krkrfgformatWPF.ViewModes
                 base.RaisePropertyChanged();
             }
         }
+
         private RuleDataModel _ruleData;
         public RuleDataModel RuleData
         {
@@ -138,9 +133,7 @@ namespace Li.Krkr.krkrfgformatWPF.ViewModes
         }
         private void Init()
         {
-            canUpData = true;
             messageBoxIsShow = false;
-            isClearing = false;
 
             _selectItemTmp = null;
             _rulePath = "";
@@ -149,18 +142,14 @@ namespace Li.Krkr.krkrfgformatWPF.ViewModes
             _saveName = "";
             _ruleData = null;
             _imageBoxSource = null;
-
-            this._allSelectedItems = new ObservableCollection<SelectedItemWithIndexModel>();
-            this._allSelectedItems.CollectionChanged += this.CollectionChanged;
+            _allItems = new SortedDictionary<int, Tuple<string, BitmapSource>>();
             
-            this.SelectSavePathcommand = new DelegateCommand(this.EmptyMethod, () => false); //关闭按钮，不予以支持
+            this.SelectSavePathCommand = new DelegateCommand(this.EmptyMethod, () => false); //关闭按钮，不予以支持
             this.ClearSelectedCommand = new DelegateCommand(this.ClearSelected);
             this.ClearAllCommand = new DelegateCommand(this.ClearAll);
             this.FormatSelectedCommand = new DelegateCommand(this.FormatSelected);
             this.SelectRulePathCommand = new DelegateCommand(this.SelectRulePath);
-            this.OpenSaveFloderCommand = new DelegateCommand(this.OpenSaveFloder);
+            this.OpenSaveFolderCommand = new DelegateCommand(this.OpenSaveFolder);
         }
-
-        
     }
 }

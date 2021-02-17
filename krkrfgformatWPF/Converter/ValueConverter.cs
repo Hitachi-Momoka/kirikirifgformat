@@ -15,8 +15,22 @@ using System.Collections.ObjectModel;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace Li.Krkr.krkrfgformatWPF
+namespace Li.Krkr.krkrfgformatWPF.Converter
 {
+    class ScaleTransformToPercent : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var transGroup = value as TransformGroup;
+            if (transGroup == null) return "0%";
+            return ((int)(((ScaleTransform)transGroup.Children[0]).ScaleX * 100)).ToString() + "%";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
     class PathToNameConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

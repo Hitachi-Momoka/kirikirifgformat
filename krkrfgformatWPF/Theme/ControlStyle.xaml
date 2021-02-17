@@ -1,0 +1,223 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:hc ="https://handyorg.github.io/handycontrol">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Converter.xaml"/>
+        <ResourceDictionary Source="StaticRes.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <Style x:Key="ButtonStyle" BasedOn="{StaticResource ButtonBaseStyle}" TargetType="Button">
+        <Setter Property="BorderThickness" 
+                Value="1"/>
+        <Setter Property="BorderBrush" 
+                Value="Black"/>
+        <Setter Property="Foreground" 
+                Value="Black"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" 
+                     Value="True">
+                <Setter Property="Background" 
+                        Value="LightGray"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="CustomListBox" TargetType="{x:Type ListBox}">
+        <Setter Property="SnapsToDevicePixels" 
+                Value="True"/>
+        <Setter Property="Height"        
+                Value="250"/>
+        <Setter Property="Width"         
+                Value="200" />
+        <Setter Property="SelectionMode" 
+                Value="Single"/>
+        <Setter Property="Margin"        
+                Value="5"/>
+        <Setter Property="AllowDrop"     
+                Value="True" />
+        
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ListBox}">
+                    <Border Background="{TemplateBinding Background}" 
+                            BorderThickness="{TemplateBinding BorderThickness}" 
+                            BorderBrush="{TemplateBinding BorderBrush}" 
+                            CornerRadius="4" >
+                        <ScrollViewer ScrollViewer.HorizontalScrollBarVisibility="Auto" 
+                                      ScrollViewer.VerticalScrollBarVisibility="Hidden">
+                            <ItemsPresenter SnapsToDevicePixels="True"/>
+                        </ScrollViewer>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <EventTrigger RoutedEvent="MouseEnter">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <ColorAnimation Storyboard.TargetProperty="BorderBrush.Color" To="DarkBlue" Duration="00:00:00.300">
+                                        <ColorAnimation.EasingFunction>
+                                            <CubicEase EasingMode="EaseInOut"/>
+                                        </ColorAnimation.EasingFunction>
+                                    </ColorAnimation>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                        <EventTrigger RoutedEvent="MouseLeave">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <ColorAnimation Storyboard.TargetProperty="BorderBrush.Color" To="Gray" Duration="00:00:00.300">
+                                        <ColorAnimation.EasingFunction>
+                                            <CubicEase EasingMode="EaseOut"/>
+                                        </ColorAnimation.EasingFunction>
+                                    </ColorAnimation>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="ItemTemplate">
+            <Setter.Value>
+                <ItemContainerTemplate>
+                    <Grid>
+                        <TextBlock Margin="1" 
+                                   Padding="2" 
+                                   FontSize="14" 
+                                   Text="{Binding Converter={StaticResource P2N}}"/>
+                    </Grid>
+                </ItemContainerTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="ItemContainerStyle">
+            <Setter.Value>
+                <Style TargetType="{x:Type ListBoxItem}">
+                    <Setter Property="BorderThickness" 
+                            Value="0"/>
+                    <Setter Property="Background" 
+                            Value="White"/>
+                    <Setter Property="BorderBrush" 
+                            Value="Transparent"/>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" 
+                                 Value="true">
+                            <Setter Property="Background" 
+                                    Value="LightGray"/>
+                        </Trigger>
+                        <Trigger Property="IsSelected" 
+                                 Value="true">
+                            <Setter Property="Background" 
+                                    Value="Blue"/>
+                            <Setter Property="Foreground" 
+                                    Value="DarkBlue"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" 
+                                 Value="false">
+                            <Setter Property="Opacity" 
+                                    Value=".4"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </Setter.Value>
+        </Setter>
+        
+        <Style.Triggers>
+            <EventTrigger RoutedEvent="DragEnter">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <ColorAnimation Storyboard.TargetProperty="Background.Color" Duration="00:00:00.300" To="#FFE8FCFF">
+                            <ColorAnimation.EasingFunction>
+                                <CubicEase EasingMode="EaseInOut"/>
+                            </ColorAnimation.EasingFunction>
+                        </ColorAnimation>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+            <EventTrigger RoutedEvent="DragLeave">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <ColorAnimation Storyboard.TargetProperty="Background.Color" Duration="00:00:00.300" To="#FFFFFFFF">
+                            <ColorAnimation.EasingFunction>
+                                <CubicEase EasingMode="EaseInOut"/>
+                            </ColorAnimation.EasingFunction>
+                        </ColorAnimation>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+            <EventTrigger RoutedEvent="Drop">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <ColorAnimation Storyboard.TargetProperty="Background.Color" Duration="00:00:00.300" To="#FFFFFFFF">
+                            <ColorAnimation.EasingFunction>
+                                <CubicEase EasingMode="EaseInOut"/>
+                            </ColorAnimation.EasingFunction>
+                        </ColorAnimation>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Style.Triggers>
+    </Style>
+    
+    <Style x:Key="ActionPanalLabelStyle" TargetType="{x:Type Label}">
+        <Setter Property="Background"      Value="Transparent"/>
+        <Setter Property="Foreground"      Value="{StaticResource ActionButtonMouseOn}"/>
+        <Setter Property="FontSize"        Value="18"/>
+    </Style>
+
+    <Style x:Key="ActionPanalButtonStyle" BasedOn="{StaticResource ButtonBaseStyle}"  TargetType="{x:Type Button}">
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Background"      Value="Transparent"/>
+        <Setter Property="Foreground"      Value="{StaticResource ActionButtonMouseLeave}"/>
+
+        <Style.Triggers>
+            <EventTrigger RoutedEvent="MouseEnter">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <ColorAnimation Storyboard.TargetProperty="Foreground.Color" To="White" Duration="00:00:00.100">
+                            <ColorAnimation.EasingFunction>
+                                <CubicEase EasingMode="EaseInOut"/>
+                            </ColorAnimation.EasingFunction>
+                        </ColorAnimation>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+            <EventTrigger RoutedEvent="MouseLeave">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <ColorAnimation Storyboard.TargetProperty="Foreground.Color" Duration="00:00:00.100">
+                            <ColorAnimation.EasingFunction>
+                                <CubicEase EasingMode="EaseOut"/>
+                            </ColorAnimation.EasingFunction>
+                        </ColorAnimation>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="AutoHiddenGrid" TargetType="{x:Type Grid}">
+        <Style.Triggers>
+            <EventTrigger RoutedEvent="MouseEnter">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="00:00:00.300">
+                            <DoubleAnimation.EasingFunction>
+                                <CubicEase EasingMode="EaseOut"/>
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+            <EventTrigger RoutedEvent="MouseLeave">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0" Duration="00:00:00.600">
+                            <DoubleAnimation.EasingFunction>
+                                <CubicEase EasingMode="EaseOut"/>
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Style.Triggers>
+    </Style>
+</ResourceDictionary>

@@ -6,42 +6,19 @@ using System.Windows.Media;
 using System.Windows;
 using System.IO;
 using Li.Drawing.Wpf;
+using Li.Drawing;
 
 namespace Li.Test
 {
     public class Test
     {
-        public static void Main()
+        public static unsafe void Main()
         {
-            string filename = @"C:\Users\Administrator\Desktop\合成输出\栞那a+1888+1912.png";
-            BitmapSource source = new BitmapImage(new Uri(filename));
-            var o = Li.Drawing.Wpf.WPFPictureHelper.CutImageBlank(source);
-
-        //    string basename = @"C:\Users\Administrator\Desktop\QQ截图20200829092529.png";
-        //    string covername = @"C:\Users\Administrator\Desktop\头像挂件设计模版.png";
-
-            //    var b = new BitmapImage(new Uri(basename));
-            //    var c = new BitmapImage(new Uri(covername));
-            //    DrawingGroup dg = new DrawingGroup
-            //    {
-            //        Opacity = 1
-            //    };
-            //    dg.Children.Add(new ImageDrawing(b, new Rect(0, 0, b.PixelWidth, b.PixelHeight)));
-            //    dg.Children.Add(new ImageDrawing(c, new Rect(0, 0, c.PixelWidth, c.PixelHeight)));
-            //    DrawingImage di = new DrawingImage
-            //    {
-            //        Drawing = dg
-            //    };
-            //    BitmapEncoder encoder = new PngBitmapEncoder();
-            //    encoder.Frames.Add(BitmapFrame.Create(di.ToBitmapSource()));
-            //    string newname = @"C:\Users\Administrator\Desktop\out.png";
-            //    using (var stream = new FileStream(newname, FileMode.Create))
-            //    {
-            //        encoder.Save(stream);
-            //    }
-            }
-
+            string name = @"C:\Users\Administrator\Desktop\未标题-1.png";
+            System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap(name);
+             bitmap.Clone( Li.Drawing.Picture.GetRectFromPictureWithouBlank(bitmap),bitmap.PixelFormat).Save(@"C:\Users\Administrator\Desktop\out.png");
         }
+    }
     public static class Extension
     {
         //Code from "https://www.it1352.com/1253670.html".

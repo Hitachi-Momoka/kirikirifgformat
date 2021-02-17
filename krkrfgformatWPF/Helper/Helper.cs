@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -13,12 +14,41 @@ namespace Li.Krkr.krkrfgformatWPF.Helper
     {
         public static int GetFileCode(string path)
         {
-            var part = System.IO.Path.GetFileNameWithoutExtension(path).Split('_');
+            var part = System.IO.Path.GetFileName(path).Split('.')[0].Split('_');
             return Convert.ToInt32(part[part.Length - 1]);
         }
+
+        [DllImport("user32.dll")]
+        public static extern bool GetCursorPos(out POINT lpPoint);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct POINT
+        {
+            public int X;
+            public int Y;
+            public POINT(int x, int y)
+            {
+                this.X = x;
+                this.Y = y;
+            }
+            System.Windows.Point ToWPFPoint()
+            {
+                return new System.Windows.Point(this.X, this.Y);
+            }
+        }
     }
-    public static class Extension
+        public static class Extension
     {
+        public static Int32Rect ToInt32Rect(this Rect rect)
+        {
+            return new Int32Rect()
+            {
+                X = (int) rect.X,
+                Y = (int) rect.Y,
+                Width = (int) rect.Width,
+                Height = (int) rect.Height
+            };
+        }
         //Code from "https://www.it1352.com/1253670.html".
         public static BitmapSource ToBitmapSource(this DrawingImage source)
         {

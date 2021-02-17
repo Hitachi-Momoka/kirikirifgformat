@@ -1,4 +1,5 @@
 ﻿using Li.Krkr.krkrfgformatWPF;
+using Li.Krkr.krkrfgformatWPF.Converter;
 using Li.Krkr.krkrfgformatWPF.ViewModes;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace Li.Krkr.Fgformat
+namespace Li.Krkr.krkrfgformatWPF
 {
     /// <summary>
     /// MainWindow.xaml 的交互逻辑
@@ -29,18 +30,24 @@ namespace Li.Krkr.Fgformat
         {
             InitializeComponent();
             this.SetSelectedItemBinding();
-            this.DataContext = new MainWindowViewModel();
-        }
-        private void addNewBox_Click(object sender, RoutedEventArgs e)
-        {
-            var index = fileGrid.Children.IndexOf((Button)sender);
-            var box1 = new ListBox()
-            {
-                Style = (Style)FindResource("mylistbox") ?? default
-            };
-            fileGrid.Children.Insert(index, box1);
         }
 
+        private void addNewBox_Click(object sender, RoutedEventArgs e)
+        {
+            var index = FileGrid.Children.IndexOf((Button)sender);
+            var box1 = new ListBox()
+            {
+                Style = (Style)FindResource("MWListBox") ?? default
+            };
+            box1.SetBinding(ListBox.SelectedItemProperty, new Binding()
+            {
+                Path = new PropertyPath("SelectItemTmp"),
+                Mode = BindingMode.TwoWay,
+                Converter = new SelectedItemCombineIndexConverter(),
+                ConverterParameter = index
+            });
+            FileGrid.Children.Insert(index, box1);
+        }
         private void ListBox_Drop(object sender, DragEventArgs e)
         {
             ListBox listBox = sender as ListBox;
@@ -50,7 +57,7 @@ namespace Li.Krkr.Fgformat
             foreach (var item in array)
             {
                 string ext = System.IO.Path.GetExtension(item).ToLower();
-                if (ext ==".png"||ext==".tlg")
+                if (ext == ".png" || ext == ".tlg")
                 {
                     obsList.Add(item);
                 }
@@ -72,15 +79,15 @@ namespace Li.Krkr.Fgformat
 
         private void SetSelectedItemBinding()
         {
-            foreach (var item in this.fileGrid.Children)
+            foreach (var item in this.FileGrid.Children)
             {
                 if(item is ListBox)
                 {
                     ListBox listBox = item as ListBox;
-                    int index = this.fileGrid.Children.IndexOf(listBox);
+                    int index = this.FileGrid.Children.IndexOf(listBox);
                     listBox.SetBinding(ListBox.SelectedItemProperty, 
                         new Binding() { Path = new PropertyPath("SelectItemTmp"), 
-                            Mode = BindingMode.TwoWay,
+                            Mode = BindingMode.OneWayToSource,
                             Converter = new SelectedItemCombineIndexConverter(),
                             ConverterParameter = index 
                         });
@@ -90,7 +97,7 @@ namespace Li.Krkr.Fgformat
 
         private void clearAll_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var item in this.fileGrid.Children)
+            foreach (var item in this.FileGrid.Children)
             {
                 if (item is ListBox)
                 {
@@ -98,12 +105,12 @@ namespace Li.Krkr.Fgformat
                     listBox.ItemsSource = null;
                 }
             }
-            slider1.Value = slider1.Minimum;
+            //slider1.Value = slider1.Minimum;
         }
 
         private void clearSelected_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var item in this.fileGrid.Children)
+            foreach (var item in this.FileGrid.Children)
             {
                 if (item is ListBox)
                 {
@@ -111,45 +118,7 @@ namespace Li.Krkr.Fgformat
                     listBox.SelectedIndex = -1;
                 }
             }
-            slider1.Value = slider1.Minimum;
         }
 
-        private void g1_MouseWheel(object sender, MouseWheelEventArgs e)
-        {
-            if(e.Delta>0)
-            {
-                if (slider1.Value + 50 <= slider1.Maximum)
-                    slider1.Value += 50;
-                else
-                    slider1.Value = slider1.Maximum;
-            }
-            if(e.Delta<0)
-            {
-                if (slider1.Value - 50 >= slider1.Minimum)
-                    slider1.Value -= 50;
-                else
-                    slider1.Value = slider1.Minimum;
-            }
-            e.Handled = true;
-        }
-
-        private void imageboxMouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            if(!this.isFullWindow)
-            {
-                this.picBoxBorder.Visibility = Visibility.Collapsed;
-                Grid.SetColumn(this.g1, 0);
-                Grid.SetColumnSpan(this.g1, 2);
-                this.controlGrid.Visibility = Visibility.Collapsed;
-                this.isFullWindow = true;
-            }else
-            {
-                this.controlGrid.Visibility = Visibility.Visible;
-                Grid.SetColumn(this.g1, 1);
-                Grid.SetColumnSpan(this.g1, 1);
-                this.picBoxBorder.Visibility = Visibility.Visible;
-                this.isFullWindow = false;
-            }
-        }
     }
 }

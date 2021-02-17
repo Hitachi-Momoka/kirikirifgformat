@@ -9,6 +9,8 @@ using System.Runtime.InteropServices;
 using System.Windows.Media;
 using Li.Krkr.krkrfgformatWPF.Helper;
 using System.Reflection;
+using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace Li.Drawing.Wpf
 {
@@ -29,7 +31,7 @@ namespace Li.Drawing.Wpf
 
             //throw new NotSupportedException();
         }
-        public static BitmapSource CreatAnEmptyBitmapSourceBySize(int width, int height)
+        public static BitmapSource CreateAnEmptyBitmapSourceBySize(int width, int height)
         {
             if(width <= 0 || height <= 0)
             {
@@ -53,6 +55,14 @@ namespace Li.Drawing.Wpf
             return BitmapSource.Create(width, height, 96.0, 96.0, PixelFormats.Bgra32, null, bytes, stride);
         }
 
+        public static Stream BitmapToStream(BitmapSource source)
+        {
+            BitmapEncoder encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(source));
+            var stream = new MemoryStream(); 
+            encoder.Save(stream);
+            return stream;
+        }
         public static BitmapSource DrawingImageToBitmapSource(DrawingImage source)
         {
             DrawingVisual drawingVisual = new DrawingVisual();
@@ -70,7 +80,132 @@ namespace Li.Drawing.Wpf
             ImageDrawing drawing = new ImageDrawing(source, imageRect);
             return new DrawingImage(drawing);
         }
-        public static ImageSource CutImageBlank(BitmapSource source)
+        public static Task<BitmapSource> CutImageBlankAsync(BitmapSource source)
+        {
+            BitmapSource bitmap = source;
+            int keep = 4;
+            int RectX = 0;
+            int RectY = 0;
+            int RectRight = 0;
+            int RectBottom = 0;
+            int width = bitmap.PixelWidth;
+            int height = bitmap.PixelHeight;
+
+
+            int bstride = Math.Abs(width * 4);
+            int byteSize = bstride * height;
+
+            byte[] array = new byte[byteSize];
+            bitmap.CopyPixels(array, bstride, 0);
+
+            return Task.Run(() =>
+                {
+                    for (int i = 0; i < bstride; i += 4)
+                    {
+                        bool flag = false;
+                        for (int j = 0; j < height - 1; j++)
+                        {
+                            if (array[bstride * j + i + 3] != 0)
+                            {
+                                RectX = i / 4;
+                                flag = true;
+                                break;
+                            }
+                        }
+                        if (flag)
+                        {
+                            break;
+                        }
+                    }
+                    for (int k = 0; k < height; k++)
+                    {
+                        bool flag2 = false;
+                        for (int l = 0; l < bstride - 1; l += 4)
+                        {
+                            if (array[bstride * k + l + 3] != 0)
+                            {
+                                RectY = k;
+                                flag2 = true;
+                                break;
+                            }
+                        }
+                        if (flag2)
+                        {
+                            break;
+                        }
+                    }
+                    for (int num6 = bstride; num6 > 0; num6 -= 4)
+                    {
+                        bool flag3 = false;
+                        for (int num7 = height - 1; num7 > 0; num7--)
+                        {
+                            if (array[bstride * num7 + num6 - 1] != 0)
+                            {
+                                RectRight = num6 / 4;
+                                flag3 = true;
+                                break;
+                            }
+                        }
+                        if (flag3)
+                        {
+                            break;
+                        }
+                    }
+                    for (int num8 = height - 1; num8 > 0; num8--)
+                    {
+                        bool flag4 = false;
+                        for (int num9 = bstride; num9 > 0; num9 -= 4)
+                        {
+                            if (array[bstride * num8 + num9 - 1] != 0)
+                            {
+                                RectBottom = num8 + 1;
+                                flag4 = true;
+                                break;
+                            }
+                        }
+                        if (flag4)
+                        {
+                            break;
+                        }
+                    }
+
+                    Int32Rect result = default;
+                    if (RectX >= keep)
+                    {
+                        result.X = RectX - keep;
+                    }
+                    else
+                    {
+                        result.X = RectX;
+                    }
+                    if (RectY >= keep)
+                    {
+                        result.Y = RectY - keep;
+                    }
+                    else
+                    {
+                        result.Y = RectY;
+                    }
+                    if (RectRight >= width - keep)
+                    {
+                        result.Width = RectRight - result.X;
+                    }
+                    else
+                    {
+                        result.Width = RectRight - result.X + keep;
+                    }
+                    if (RectBottom >= height - keep)
+                    {
+                        result.Height = RectBottom - result.Y;
+                    }
+                    else
+                    {
+                        result.Height = RectBottom - result.Y + keep;
+                    }
+                    return (BitmapSource)new CroppedBitmap(bitmap, result);
+                });
+        }
+        public static BitmapSource CutImageBlank(BitmapSource source)
         {
             int keep = 4;
             BitmapSource bitmap = source; //DrawingImageToBitmapSource((DrawingImage)source);
@@ -82,78 +217,80 @@ namespace Li.Drawing.Wpf
             int width = bitmap.PixelWidth;
             int height = bitmap.PixelHeight;
 
+
             int bstride = Math.Abs(width * 4);
             int byteSize = bstride * height;
+
             byte[] array = new byte[byteSize];
             bitmap.CopyPixels(array, bstride, 0);
-            for (int i = 0; i < bstride; i += 4)
-            {
-                bool flag = false;
-                for (int j = 0; j < height - 1; j++)
+                for (int i = 0; i < bstride; i += 4)
                 {
-                    if (array[bstride * j + i + 3] != 0)
+                    bool flag = false;
+                    for (int j = 0; j < height - 1; j++)
                     {
-                        RectX = i / 4;
-                        flag = true;
+                        if (array[bstride * j + i + 3] != 0)
+                        {
+                            RectX = i / 4;
+                            flag = true;
+                            break;
+                        }
+                    }
+                    if (flag)
+                    {
                         break;
                     }
                 }
-                if (flag)
+                for (int k = 0; k < height; k++)
                 {
-                    break;
-                }
-            }
-            for (int k = 0; k < height; k++)
-            {
-                bool flag2 = false;
-                for (int l = 0; l < bstride - 1; l += 4)
-                {
-                    if (array[bstride * k + l + 3] != 0)
+                    bool flag2 = false;
+                    for (int l = 0; l < bstride - 1; l += 4)
                     {
-                        RectY = k;
-                        flag2 = true;
+                        if (array[bstride * k + l + 3] != 0)
+                        {
+                            RectY = k;
+                            flag2 = true;
+                            break;
+                        }
+                    }
+                    if (flag2)
+                    {
                         break;
                     }
                 }
-                if (flag2)
+                for (int num6 = bstride; num6 > 0; num6 -= 4)
                 {
-                    break;
-                }
-            }
-            for (int num6 = bstride; num6 > 0; num6 -= 4)
-            {
-                bool flag3 = false;
-                for (int num7 = height - 1; num7 > 0; num7--)
-                {
-                    if (array[bstride * num7 + num6 - 1] != 0)
+                    bool flag3 = false;
+                    for (int num7 = height - 1; num7 > 0; num7--)
                     {
-                        RectRight = num6 / 4;
-                        flag3 = true;
+                        if (array[bstride * num7 + num6 - 1] != 0)
+                        {
+                            RectRight = num6 / 4;
+                            flag3 = true;
+                            break;
+                        }
+                    }
+                    if (flag3)
+                    {
                         break;
                     }
                 }
-                if (flag3)
+                for (int num8 = height - 1; num8 > 0; num8--)
                 {
-                    break;
-                }
-            }
-            for (int num8 = height - 1; num8 > 0; num8--)
-            {
-                bool flag4 = false;
-                for (int num9 = bstride; num9 > 0; num9 -= 4)
-                {
-                    if (array[bstride * num8 + num9 - 1] != 0)
+                    bool flag4 = false;
+                    for (int num9 = bstride; num9 > 0; num9 -= 4)
                     {
-                        RectBottom = num8 + 1;
-                        flag4 = true;
+                        if (array[bstride * num8 + num9 - 1] != 0)
+                        {
+                            RectBottom = num8 + 1;
+                            flag4 = true;
+                            break;
+                        }
+                    }
+                    if (flag4)
+                    {
                         break;
                     }
                 }
-                if (flag4)
-                {
-                    break;
-                }
-            }
             Int32Rect result = default;
             if (RectX >= keep)
             {
@@ -190,19 +327,19 @@ namespace Li.Drawing.Wpf
             return new CroppedBitmap(bitmap, result);
         }
 
-        public static BitmapSource GreateBitmapFromFile(string name)
+        public static BitmapSource CreateBitmapFromFile(string name)
         {
             if (null == name) return null;
             try
             {
                 string ext = System.IO.Path.GetExtension(name);
-                
+
                 if (".png" == ext)
                 {
                     BitmapImage image = new BitmapImage();
                     image.BeginInit();
                     image.CacheOption = BitmapCacheOption.OnLoad;
-                    using(System.IO.MemoryStream ms = new System.IO.MemoryStream(System.IO.File.ReadAllBytes(name)))
+                    using (System.IO.MemoryStream ms = new System.IO.MemoryStream(System.IO.File.ReadAllBytes(name)))
                     {
                         image.StreamSource = ms;
                         image.EndInit();
@@ -212,11 +349,12 @@ namespace Li.Drawing.Wpf
                 }
                 if(".tlg"==ext)
                 {
+                    
                     string exePath = Environment.CurrentDirectory;
                     string fileArcFormats = System.IO.Path.Combine(exePath, "GARbro", "ArcFormats.dll");
                     string fileGameRes = System.IO.Path.Combine(exePath, "GARbro", "GameRes.dll");
 
-                    if (!System.IO.File.Exists(fileGameRes) || !System.IO.File.Exists(fileArcFormats)) return null;
+                    if (!(System.IO.File.Exists(fileGameRes) || System.IO.File.Exists(fileArcFormats))) return null;
 
                     Assembly asmArcFormats = Assembly.LoadFrom(fileArcFormats);
                     Assembly asmGameRes = Assembly.LoadFrom(fileGameRes);
@@ -244,7 +382,7 @@ namespace Li.Drawing.Wpf
             {
 
             }
-            throw new Exception("不受支持的文件格式。");
+            throw new NotSupportedException("不受支持的文件。");
         }
     }
     public class PictureMixer
@@ -256,17 +394,54 @@ namespace Li.Drawing.Wpf
             } 
         }
         public DrawingGroup Group { set; get; } = new DrawingGroup() { Opacity = 1 };
-        public PictureMixer(int width,int height)
-        {
-            this.Group.Children.Add(new ImageDrawing(WPFPictureHelper.CreatAnEmptyBitmapSourceBySize(width, height), new Rect(0, 0, width, height)));
-        }
-
+        public PictureMixer()
+        { }
         public void AddPicture(BitmapSource bitmapSource, Rect rect, int opacity)
         {
-            DrawingGroup group = new DrawingGroup();
-            group.Opacity = opacity / 255.0;
+            DrawingGroup group = new DrawingGroup
+            {
+                Opacity = opacity / 255.0
+            };
             group.Children.Add(new ImageDrawing(bitmapSource, rect));
             this.Group.Children.Add(group);
+        }
+    }
+
+    public struct PointRect
+    {
+        public double X { set; get; }
+        public double Y { get; set; }
+        public double Bottom { get; set; }
+        public double Right { get; set; }
+
+        public PointRect(double x, double y, double r, double b)
+        {
+            this.X = x;
+            this.Y = y;
+            this.Bottom = b;
+            this.Right = r;
+        }
+
+        public PointRect Covered(PointRect baseRect, PointRect coveRect)
+        {
+            return new PointRect()
+            {
+                X = Math.Min(baseRect.X,coveRect.X),
+                Y = Math.Min(baseRect.Y,coveRect.Y),
+                Bottom = Math.Max(baseRect.Bottom,coveRect.Bottom),
+                Right = Math.Max(baseRect.Right,baseRect.Right)
+            };
+        }
+
+        public Rect ToRect()
+        {
+            return new Rect()
+            {
+                X = this.X,
+                Y = this.Y,
+                Width = Math.Max(this.Right - this.X, 0.0),
+                Height = Math.Max(this.Bottom - this.Y, 0.0)
+            };
         }
     }
 

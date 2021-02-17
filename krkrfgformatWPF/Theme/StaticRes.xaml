@@ -1,0 +1,14 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:Li.Krkr.krkrfgformatWPF.Theme"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <system:Double x:Key="toolBarSep">18</system:Double>
+    <Brush x:Key="WhiteBrush" >#FFFFFFFF</Brush>
+    <Brush x:Key="BlackBrush">#FF000000</Brush>
+    <Brush x:Key="DarkBlueBrush">#FF00008B</Brush>
+    <Brush x:Key="BorderBrush">#FFD3D3D3</Brush>
+    <Brush x:Key="BackGroundBrush">#FF000000</Brush>
+    <Brush x:Key="ActionButtonMouseOn">#FFFFFFFF</Brush>
+    <Brush x:Key="ActionButtonMouseLeave">#FFC3C3C3</Brush>
+</ResourceDictionary>

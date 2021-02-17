@@ -1,22 +1,16 @@
 ﻿using Prism.Mvvm;
-using Prism.Commands;
 using Microsoft.Win32;
 using System.Windows.Media;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Collections.ObjectModel;
 using System.IO;
-using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Media.Imaging;
 
 using Li.Drawing.Wpf;
 using Li.Krkr.krkrfgformatWPF.Helper;
 using Li.Krkr.krkrfgformatWPF.Models;
-using System.Runtime.Remoting.Messaging;
 
 namespace Li.Krkr.krkrfgformatWPF.ViewModes
 {
@@ -37,16 +31,16 @@ namespace Li.Krkr.krkrfgformatWPF.ViewModes
                 }
             }
             string ruleFileName = sb.ToString();
-            foreach (var format in SupportedFormat.RuleDataFormat)
+            foreach (var format in SupportedFileExtension.RuleDataExtension)
             {
-                string tmpPath = $"{dir}\\{ruleFileName}.{format}";
+                string tmpPath = $"{dir}\\{ruleFileName}{format}";
                 if (File.Exists(tmpPath))
                     return tmpPath;
             }
             return null;
         }
 
-        private string CreatDefultSavePath(string v)
+        private string CreateDefaultSavePath(string v)
         {
             var newDir = System.IO.Path.GetDirectoryName(v) + @"\合成输出\";
             if(!System.IO.Directory.Exists(newDir))
@@ -55,71 +49,50 @@ namespace Li.Krkr.krkrfgformatWPF.ViewModes
             }
             return newDir;
         }
-
-        private void UpDataAllSelectedItems(SelectedItemWithIndexModel item)
+        private void UpDataAllItems(SelectedItemWithIndexModel item)
         {
             if (item == null) return;
-            canUpData = false;
-            foreach (var i in AllSelectedItems)
+            bool needtodelect = false;
+            foreach (var i in AllItems)
             {
-                if(i.Index == item.Index)
+                if(i.Key==item.Index)
                 {
-                    AllSelectedItems.Remove(i);
+                    needtodelect = true;
                     break;
                 }
             }
-            canUpData = true;
-            AllSelectedItems.Add(item);
-            
+            if (needtodelect) { AllItems.Remove(item.Index); }
+            AllItems.Add(item.Index, new Tuple<string, BitmapSource>(item.SelectedItem.ToString(), WPFPictureHelper.CreateBitmapFromFile(item.SelectedItem.ToString())));
+            UpdateImage();
         }
-        private void CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void UpdateImage()
         {
-            //if (isClearing) return;//如果在执行清理操作，不执行操作
-            if (!canUpData) return;//移除集合内容时不激发合成操作。
-            if (this.AllSelectedItems.Count == 0) return;//包含东西的时候不执行操作。
-            if(RuleData == null)
+            if (AllItems.Count == 0) return;
+            if (RuleData == null)
             {
                 WithoutRuleDataMode();
                 return;
             }
-
             string strtmp = System.IO.Path.GetFileNameWithoutExtension(RulePath);
-            SortedDictionary<int, string> dic = new SortedDictionary<int, string>();
-            foreach (var item in this.AllSelectedItems)
-            {
-                dic.Add(item.Index, item.SelectedItem.ToString());
-            }
-            PictureMixer mixer = new PictureMixer(Convert.ToInt32(this.RuleData.FgLarge.Width), Convert.ToInt32(this.RuleData.FgLarge.Height));
-            foreach (var item in dic)
+            PictureMixer mixer = new PictureMixer();
+            foreach (var item in AllItems)
             {
                 strtmp += "+";
-                var image = WPFPictureHelper.GreateBitmapFromFile(item.Value); //new BitmapImage(new Uri(item.Value));
                 LineDataModel line;
-                if(this.IsSideOnly)
+                if (this.IsSideOnly)
                 {
-                    line = this.RuleData.GetLineDataBySize(image.PixelWidth, image.PixelHeight);
+                    line = this.RuleData.GetLineDataBySize(item.Value.Item2.PixelWidth, item.Value.Item2.PixelHeight);
                 }
                 else
                 {
-                    line = this.RuleData.GetLineDataByID(Helper.Helper.GetFileCode(item.Value));
+                    line = this.RuleData.GetLineDataByID(Helper.Helper.GetFileCode(item.Value.Item1)); ;
                 }
                 strtmp += line.LayerId;
-                mixer.AddPicture(image,line.ToRect(),Convert.ToInt32(line.Opacity)); 
+                mixer.AddPicture(item.Value.Item2, line.ToRect(), Convert.ToInt32(line.Opacity));
             }
             SaveName = strtmp;
-            
-            BitmapSource source = WPFPictureHelper.DrawingImageToBitmapSource(mixer.OutImage);
-            //CutImageBlankHandler handler = WPFPictureHelper.CutImageBlank;
-            //IAsyncResult result = handler.BeginInvoke(source, new AsyncCallback(this.CallBack), null); 
-            this.ImageBoxSource = WPFPictureHelper.CutImageBlank(source);
-            //GC.Collect();
+            this.ImageBoxSource = mixer.OutImage;
         }
-        //public void CallBack(IAsyncResult result)
-        //{
-        //    CutImageBlankHandler handler = ((AsyncResult)result).AsyncDelegate as CutImageBlankHandler;
-        //    handler.EndInvoke(result);
-        //    this.ImageBoxSource = result.AsyncState as BitmapSource;
-        //}
 
         private void WithoutRuleDataMode()
         {
@@ -142,9 +115,8 @@ namespace Li.Krkr.krkrfgformatWPF.ViewModes
         {
             if (this.ImageBoxSource == null) return;
             BitmapEncoder encoder = new PngBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create((BitmapSource)ImageBoxSource));
-            string newname = $"{SavePath}\\{SaveName}.png";
-            using (var stream = new FileStream(newname, FileMode.Create))
+            encoder.Frames.Add(BitmapFrame.Create(((DrawingImage)ImageBoxSource).ToBitmapSource()));
+            using (var stream = new FileStream($"{SavePath}\\{SaveName}.png", FileMode.Create))
             {
                 encoder.Save(stream);
             }
@@ -160,7 +132,7 @@ namespace Li.Krkr.krkrfgformatWPF.ViewModes
                 RulePath = openFileDialog.FileName;
             }
         }
-        public void OpenSaveFloder()
+        public void OpenSaveFolder()
         {
             if (!string.IsNullOrEmpty(SavePath))
                 System.Diagnostics.Process.Start("explorer.exe", SavePath);
@@ -171,18 +143,14 @@ namespace Li.Krkr.krkrfgformatWPF.ViewModes
         }
         public void ClearSelected()
         {
-            this.AllSelectedItems.CollectionChanged -= this.CollectionChanged;
-            this.AllSelectedItems.Clear();
+            
+            this.AllItems.Clear();
             this.ImageBoxSource = null;
             GC.Collect();
-            this.AllSelectedItems.CollectionChanged += this.CollectionChanged;
         }
         public void ClearAll()
         {
-            this.AllSelectedItems.CollectionChanged -= this.CollectionChanged;
             this.messageBoxIsShow = true;
-            this.canUpData = true;
-            this.isClearing = false;
 
             this.SelectItemTmp = null;
             this.RulePath = "";
@@ -192,8 +160,7 @@ namespace Li.Krkr.krkrfgformatWPF.ViewModes
             this.RuleData = null;
             this.ImageBoxSource = null;
 
-            this.AllSelectedItems = new ObservableCollection<SelectedItemWithIndexModel>();
-            this.AllSelectedItems.CollectionChanged += this.CollectionChanged;
+            this.AllItems = new SortedDictionary<int, Tuple<string, BitmapSource>>();
             this.messageBoxIsShow = false;
 
             GC.Collect();

@@ -1,142 +1,217 @@
-﻿<Window x:Class="Li.Krkr.Fgformat.MainWindow"
+﻿<Window x:Class="Li.Krkr.krkrfgformatWPF.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Li.Krkr.Fgformat"
-        xmlns:krkr ="clr-namespace:Li.Krkr.krkrfgformatWPF"
-        xmlns:sys ="clr-namespace:System;assembly=mscorlib"
+        xmlns:local="Li.Krkr.krkrfgformatWPF"
+        xmlns:custom="clr-namespace:Li.Krkr.krkrfgformatWPF.CustomControl"
         xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:hc ="https://handyorg.github.io/handycontrol"
+        xmlns:converter="clr-namespace:Li.Krkr.krkrfgformatWPF.Converter"
+        xmlns:mainvm ="clr-namespace:Li.Krkr.krkrfgformatWPF.ViewModes"
         mc:Ignorable="d"
-        Title="KRKR立绘合成 BY：momoka" Height="720" Width="1280" MinHeight="480" MinWidth="720" Icon="icon.ico">
+        Title="KRKR立绘合成 BY：HitachiMomoka" Height="720" Width="1280" MinHeight="480" MinWidth="720" Icon="icon.ico" SnapsToDevicePixels="True">
+    <Window.DataContext>
+        <mainvm:MainWindowViewModel/>
+    </Window.DataContext>
     <Window.Resources>
-        <sys:Double x:Key="toolBarSep">18</sys:Double>
-        <krkr:PathToNameConverter x:Key="P2N"/>
-
-        <Style x:Key="mylistbox" TargetType="{x:Type ListBox}">
-            <Setter Property="Height"        Value="250"/>
-            <Setter Property="Width"         Value="200" />
-            <Setter Property="SelectionMode" Value="Single"/>
-            <Setter Property="Margin"        Value="5"/>
-            <Setter Property="AllowDrop"     Value="True" />
-
-            <EventSetter Event="Drop"      Handler="ListBox_Drop"/>
-            <EventSetter Event="DragEnter" Handler="ListBox_DragEnter"/>
-
-            <Setter Property="ItemTemplate">
-                <Setter.Value>
-                    <ItemContainerTemplate>
-                        <Grid>
-                            <TextBlock Margin="1" Text="{Binding Converter={StaticResource P2N}}"/>
-                        </Grid>
-                    </ItemContainerTemplate>
-                </Setter.Value>
-            </Setter>
-            
-            <Style.Triggers>
-                <EventTrigger RoutedEvent="DragEnter">
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <ColorAnimation Storyboard.TargetProperty="Background.Color" Duration="00:00:00.300" To="#FFE8FCFF">
-                                <ColorAnimation.EasingFunction>
-                                    <CubicEase EasingMode="EaseInOut"/>
-                                </ColorAnimation.EasingFunction>
-                            </ColorAnimation>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </EventTrigger>
-                <EventTrigger RoutedEvent="DragLeave">
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <ColorAnimation Storyboard.TargetProperty="Background.Color" Duration="00:00:00.300" To="#FFFFFFFF">
-                                <ColorAnimation.EasingFunction>
-                                    <CubicEase EasingMode="EaseInOut"/>
-                                </ColorAnimation.EasingFunction>
-                            </ColorAnimation>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </EventTrigger>
-                <EventTrigger RoutedEvent="Drop">
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <ColorAnimation Storyboard.TargetProperty="Background.Color" Duration="00:00:00.300" To="#FFFFFFFF">
-                                <ColorAnimation.EasingFunction>
-                                    <CubicEase EasingMode="EaseInOut"/>
-                                </ColorAnimation.EasingFunction>
-                            </ColorAnimation>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </EventTrigger>
-            </Style.Triggers>
+        <converter:ScaleTransformToPercent x:Key="ScaleTransformToPercent"/>
+        <Style x:Key="MWListBox" BasedOn="{StaticResource CustomListBox}" TargetType="ListBox">
+            <EventSetter Event="Drop"      
+                     Handler="ListBox_Drop"/>
+            <EventSetter Event="DragEnter" 
+                     Handler="ListBox_DragEnter"/>
         </Style>
-        
-        <DataTemplate x:Key="lbItem">
-            <Grid>
-                <TextBlock Margin="1" Text="{Binding Converter={StaticResource P2N}}"/>
-            </Grid>
-        </DataTemplate>
-        
     </Window.Resources>
-    <Grid x:Name="mainGrid" ShowGridLines="False" SnapsToDevicePixels="True">
+    <Grid x:Name="MainGrid" 
+          ShowGridLines="False" 
+          SnapsToDevicePixels="True">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2.3*"/>
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
 
-        <Border x:Name="picBoxBorder" Grid.Column="1" BorderBrush="Gray" BorderThickness="1,0,0,0"/>
+        <Border x:Name="PicBoxBorder" 
+                Grid.Column="1" 
+                BorderBrush="{StaticResource BorderBrush}" 
+                BorderThickness="1"/>
 
-        <Grid x:Name="g1" Grid.Column="1"  Margin="5">
-            <ScrollViewer x:Name="s1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" MouseDoubleClick="imageboxMouseDoubleClick">
-                <Grid x:Name="g2" MouseWheel="g1_MouseWheel">
-                    <Slider x:Name="slider1" Minimum="{Binding ElementName=s1, Path=ActualWidth}" Maximum="{Binding ElementName=imageBox, Path=Source.Width}" SmallChange="50" Visibility="Hidden"/>
-                    <Image x:Name="imageBox" Stretch="Uniform" MaxWidth="{Binding ElementName=slider1, Path=Value, Mode=OneWay}" RenderOptions.BitmapScalingMode="HighQuality" ToolTip="滚轮放大缩小，双击全窗口查看" Source="{Binding ImageBoxSource, Mode=TwoWay}"/>
+        <Grid x:Name="G1" 
+              Grid.Column="1"  
+              Margin="3">
+            <Border x:Name="Border"
+                    ClipToBounds="True"
+                    BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" 
+                    BorderThickness="1" 
+                    CornerRadius="3">
+                <Grid x:Name="BasePanal">
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition Height="75"/>
+                    </Grid.RowDefinitions>
+                    <Canvas x:Name="ImageCanvas" Grid.RowSpan="2" Margin="1">
+                        <Canvas.Background>
+                            <ImageBrush TileMode="FlipX" Opacity="0" Viewport="0,0,0.02,0.02" ViewportUnits="RelativeToBoundingBox" ImageSource="Resources/BackGroundBaseBrushImage.png"/>
+                        </Canvas.Background>
+                        <Grid x:Name="ImageBoxPanal"
+                              Canvas.Top="0"
+                              Canvas.Left="0"
+                              Width="{Binding ElementName=ImageCanvas,Path=ActualWidth}"
+                              Height="{Binding ElementName=ImageCanvas,Path=ActualHeight}"
+                              PreviewMouseWheel="ImageBoxPanal_PreviewMouseWheel"
+                              PreviewMouseDown="ImageBoxPanal_PreviewMouseDown"
+                              PreviewMouseMove="ImageBoxPanal_PreviewMouseMove"
+                              PreviewMouseUp="ImageBoxPanal_PreviewMouseUp">
+                            <Image x:Name="ImageBox" 
+                                   IsHitTestVisible="True"
+                                   Opacity="1" 
+                                   RenderOptions.BitmapScalingMode="HighQuality" 
+                                   Source="{Binding ImageBoxSource}">
+                                <Image.RenderTransform>
+                                    <TransformGroup>
+                                        <ScaleTransform ScaleX="1" ScaleY="1" CenterX="0" CenterY="0"/>
+                                        <TranslateTransform X="0" Y="0"/>
+                                    </TransformGroup>
+                                </Image.RenderTransform>
+                            </Image>
+                        </Grid>
+                    </Canvas>
+                    <Grid x:Name="ZoomPanal" 
+                          Grid.RowSpan="2" 
+                          Opacity="0"
+                          IsHitTestVisible="True">
+                        <Border x:Name="ZoomBorder" 
+                                Width="65" Height="35" 
+                                BorderThickness="1" 
+                                CornerRadius="5" 
+                                Background="#80000000">
+                            <Label x:Name="ZoomPercentMainGrid" 
+                                   Padding="0"
+                                   BorderBrush="Transparent" 
+                                   Background="Transparent" 
+                                   Foreground="#B0FFFFFF" 
+                                   FontWeight="Bold" 
+                                   FontSize="18" 
+                                   Content="{Binding ElementName=ZoomPercentControlGrid,Path=Content}"/>
+                        </Border>
+                    </Grid>
+                    <Grid x:Name="ActionPanal" 
+                          Grid.Row="1" 
+                          Opacity="0" 
+                          Style="{StaticResource AutoHiddenGrid}">
+                        <Border x:Name="ActionBorder" 
+                                Width="200" 
+                                Height="50" 
+                                BorderThickness="1" 
+                                CornerRadius="5" 
+                                Background="#6A000000">
+                            <WrapPanel Orientation="Horizontal" 
+                                       HorizontalAlignment="Center" 
+                                       VerticalAlignment="Center">
+                                <Button x:Name="ZoomInButton" 
+                                        Margin="5,0,2,0" 
+                                        Padding="0,0" Style="{StaticResource ActionPanalButtonStyle}">
+                                    <Button.Content>
+                                        <Path Width="25" 
+                                              Height="25" 
+                                              Fill="{Binding ElementName=ZoomInButton,Path=Foreground}">
+                                            <Path.Data>
+                                                <GeometryGroup>
+                                                    <PathGeometry Figures="M592 400l-128 0 0-128c0-19.2-12.8-32-32-32s-32 12.8-32 32l0 128-128 0c-19.2 0-32 12.8-32 32s12.8 32 32 32l128 0 0 128c0 19.2 12.8 32 32 32s32-12.8 32-32l0-128 128 0c19.2 0 32-12.8 32-32S611.2 400 592 400z"/>
+                                                    <PathGeometry Figures="M950.4 905.6l-236.8-236.8c54.4-64 86.4-147.2 86.4-236.8C800 227.2 636.8 64 432 64 227.2 64 64 227.2 64 432 64 636.8 227.2 800 432 800c89.6 0 172.8-32 236.8-86.4l236.8 236.8c6.4 6.4 16 9.6 22.4 9.6s16-3.2 22.4-9.6C963.2 937.6 963.2 918.4 950.4 905.6zM432 736C265.6 736 128 598.4 128 432 128 265.6 265.6 128 432 128c166.4 0 304 137.6 304 304C736 598.4 598.4 736 432 736z"/>
+                                                </GeometryGroup>
+                                            </Path.Data>
+                                        </Path>
+                                    </Button.Content>
+                                </Button>
+
+                                <Label x:Name="ZoomPercentLabel" 
+                                       Margin="0,0" 
+                                       Padding="0" 
+                                       Width="50" 
+                                       Style="{StaticResource ActionPanalLabelStyle}">
+                                    <Label.Content>
+                                        <Grid Width="{Binding ElementName=ZoomPercentLabel,Path=Width}" 
+                                              Height="{Binding ElementName=ZoomPercentLabel,Path=ActualHeight}">
+                                            <Label x:Name="ZoomPercentControlGrid"
+                                                   Content="{Binding ElementName=ImageBox,Path=RenderTransform,Converter={StaticResource ScaleTransformToPercent}}" 
+                                                   Padding="0" 
+                                                   Background="Transparent" 
+                                                   BorderThickness="0"  
+                                                   FontSize="15" 
+                                                   Foreground="{Binding ElementName=ZoomPercentLabel,Path=Foreground}"/>
+                                        </Grid>
+                                    </Label.Content>
+                                </Label>
+
+                                <Button x:Name="ZoomOutButton" 
+                                        Margin="2,0" 
+                                        Padding="3,0" 
+                                        Style="{StaticResource ActionPanalButtonStyle}">
+                                    <Button.Content>
+                                        <Path Width="25" 
+                                              Height="25" 
+                                              Fill="{Binding ElementName=ZoomOutButton,Path=Foreground}">
+                                            <Path.Data>
+                                                <GeometryGroup>
+                                                    <PathGeometry Figures="M592 400l-320 0c-19.2 0-32 12.8-32 32s12.8 32 32 32l320 0c19.2 0 32-12.8 32-32S611.2 400 592 400z"/>
+                                                    <PathGeometry Figures="M950.4 905.6l-236.8-236.8c54.4-64 86.4-147.2 86.4-236.8C800 227.2 636.8 64 432 64 227.2 64 64 227.2 64 432 64 636.8 227.2 800 432 800c89.6 0 172.8-32 236.8-86.4l236.8 236.8c6.4 6.4 16 9.6 22.4 9.6s16-3.2 22.4-9.6C963.2 937.6 963.2 918.4 950.4 905.6zM432 736C265.6 736 128 598.4 128 432 128 265.6 265.6 128 432 128c166.4 0 304 137.6 304 304C736 598.4 598.4 736 432 736z"/>
+                                                </GeometryGroup>
+                                            </Path.Data>
+                                        </Path>
+                                    </Button.Content>
+                                </Button>
+                                <Button x:Name="OrignalImageSizeButton" 
+                                        Margin="2,0" 
+                                        Padding="3,0" 
+                                        Style="{StaticResource ActionPanalButtonStyle}">
+                                    <Button.Content>
+                                        <Border BorderBrush="{Binding ElementName=OrignalImageSizeButton,Path=Foreground}"
+                                                BorderThickness="1" 
+                                                CornerRadius="3">
+                                            <TextBlock Padding="3,1" 
+                                                       Text="1:1" 
+                                                       FontSize="12" 
+                                                       FontWeight="Bold"/>
+                                        </Border>
+                                    </Button.Content>
+                                </Button>
+                            </WrapPanel>
+                        </Border>
+                    </Grid>
                 </Grid>
-            </ScrollViewer>
+            </Border>
         </Grid>
-        
-        <!--<ScrollViewer x:Name="imageScroll" Grid.Column="1" Margin="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-            <Grid x:Name="imageGrid" Margin="3">
-                <Image x:Name="imageBox" Stretch="Uniform" MinWidth="380" RenderOptions.BitmapScalingMode="HighQuality" Source="{Binding ImageBoxSource, Mode=TwoWay}" SourceUpdated="imageBox_SourceUpdated"/>
-            </Grid>
-        </ScrollViewer>-->
-        <Grid x:Name="controlGrid" ShowGridLines="False" Grid.Column="0" >
+        <Grid x:Name="ControlGrid" 
+              ShowGridLines="False" 
+              Grid.Column="0" >
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="40"/>
                 <RowDefinition/>
                 <RowDefinition Height="100"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <Border Grid.Row="0" x:Name="panel1" BorderBrush="Gray" BorderThickness="0,0,0,1"/>
-            <Border Grid.Row="1" x:Name="panel2" BorderBrush="Gray" BorderThickness="0,0,0,0"/>
-            <Border Grid.Row="2" x:Name="panel3" BorderBrush="Gray" BorderThickness="0,1,0,1"/>
-            <Border Grid.Row="3" x:Name="panel4" BorderBrush="Gray" BorderThickness="0,1,1,0"/>
+            <Border Grid.Row="0" x:Name="Panel1" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1,1,0,1"/>
+            <Border Grid.Row="1" x:Name="Panel2" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1,0,0,0"/>
+            <Border Grid.Row="2" x:Name="Panel3" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1,1,0,1"/>
+            <Border Grid.Row="3" x:Name="Panel4" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1,0,0,1"/>
 
-            <ToolBar Grid.Row="0">
-                <Button x:Name="clearAll" Content="清空所有" Padding="5" Click="clearAll_Click" Command="{Binding ClearAllCommand}"></Button>
+            <ToolBar Grid.Row="0" Background="#FFEEF5FD">
+                <Button x:Name="ClearAll"      Content="清空所有"   Margin="4"  Click="clearAll_Click"      Command="{Binding ClearAllCommand}"></Button>
                 <Separator/>
-                <Button x:Name="clearSelected" Content="清空选择" Padding="5" Click="clearSelected_Click" Command="{Binding ClearSelectedCommand}"></Button>
+                <Button x:Name="ClearSelected" Content="清空选择"   Margin="4"  Click="clearSelected_Click" Command="{Binding ClearSelectedCommand}"></Button>
                 <Separator/>
-                <CheckBox x:Name="sideOnly" ToolTip="可以解决一些无法获取正确坐标的问题" IsChecked="{Binding IsSideOnly}">
-                    <CheckBox.Content>
-                        <StackPanel Orientation="Horizontal">
-                            <CheckBox Grid.Column="0" x:Name="toolbarCheckBox" IsChecked="{Binding ElementName=sideOnly,Path=IsChecked,Mode=TwoWay}"></CheckBox>
-                            <TextBlock Grid.Column="1" Text="用边长寻找" VerticalAlignment="Center" Margin="2,0,0,0"/>
-                        </StackPanel>
-                    </CheckBox.Content>
-                </CheckBox>
+                <CheckBox x:Name="SideOnly"    Content="用边长寻找" Margin="4"  ToolTip="可以解决一些无法获取正确坐标的问题" IsChecked="{Binding IsSideOnly}"/>
                 <Separator/>
-                <!--<ComboBox x:Name="imageShowMode" IsReadOnly="True" SelectionChanged="imageShowMode_SelectionChanged" SelectedIndex="0" >
-                    <ComboBoxItem>缩放</ComboBoxItem>
-                    <ComboBoxItem>原尺寸</ComboBoxItem>
-                    <ProgressBar Height="10" Width="100"/>
-                </ComboBox>
-                <Separator/>-->
-                <Button x:Name="helpButton" Content="Help"  Padding="5"/>
-                
+                <Button x:Name="HelpButton"    Content="Help"       Margin="4"/>
+                <Label Content="{Binding ElementName=ImageBox, Path=Source.Width}"/>
+                <Label Content="{Binding ElementName=ImageBox, Path=Source.Height}"/>
+
             </ToolBar>
-            <ScrollViewer x:Name="filePanelScroll" Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                <WrapPanel  x:Name="fileGrid" Margin="5">
+            <ScrollViewer x:Name="FilePanelScroll" Grid.Row="1" 
+                          VerticalScrollBarVisibility="Auto">
+                <WrapPanel  x:Name="FileGrid" Margin="5">
                     <b:Interaction.Behaviors>
                         <b:FluidMoveBehavior Duration="00:00:00.400" AppliesTo="Children">
                             <b:FluidMoveBehavior.EaseY>
@@ -147,13 +222,13 @@
                             </b:FluidMoveBehavior.EaseX>
                         </b:FluidMoveBehavior>
                     </b:Interaction.Behaviors>
-                    <ListBox Style="{StaticResource mylistbox}"/>
-                    <ListBox Style="{StaticResource mylistbox}"/>
-                    <ListBox Style="{StaticResource mylistbox}"/>
-                    <ListBox Style="{StaticResource mylistbox}"/>
-                    <ListBox Style="{StaticResource mylistbox}"/>
-                    <ListBox Style="{StaticResource mylistbox}"/>
-                    <ListBox Style="{StaticResource mylistbox}"/>
+                    <ListBox Style="{StaticResource MWListBox}"/>
+                    <ListBox Style="{StaticResource MWListBox}"/>
+                    <ListBox Style="{StaticResource MWListBox}"/>
+                    <ListBox Style="{StaticResource MWListBox}"/>
+                    <ListBox Style="{StaticResource MWListBox}"/>
+                    <ListBox Style="{StaticResource MWListBox}"/>
+                    <ListBox Style="{StaticResource MWListBox}"/>
                     <Button x:Name="addNewBox" Margin="5" Width="200" Height="250" Content="ADD" Click="addNewBox_Click"/>
                 </WrapPanel>
             </ScrollViewer>
@@ -168,20 +243,33 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <Border  Grid.Row="0" Grid.Column="2" x:Name="panel5" BorderBrush="Gray" BorderThickness="1,0,0,0"/>
-                <Border  Grid.Row="1" Grid.Column="2" x:Name="panel6" BorderBrush="Gray" BorderThickness="1,0,0,0"/>
+                <Border  Grid.Row="0" Grid.Column="2" x:Name="Panel5" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1,0,0,0"/>
+                <Border  Grid.Row="1" Grid.Column="2" x:Name="Panel6" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1,0,0,0"/>
 
-                <Button  Grid.Row="0" Grid.Column="0" x:Name="selectRulePath" Margin="10,15,5,7.5"  Content="选择规则文件"   Padding="5" MinHeight="22" Command="{Binding SelectRulePathCommand}"/>
-                <Button  Grid.Row="1" Grid.Column="0" x:Name="selectSavePath" Margin="10,7.5,5,15"  Content="选择存储文件夹" Padding="5" MinHeight="22" Command="{Binding SelectSavePathcommand}"/>
-                <Button  Grid.Row="0" Grid.Column="2" x:Name="formatSelected" Margin="10,15,10,7.5" Content="合成选择"       Padding="5" MinHeight="22" Command="{Binding FormatSelectedCommand}"/>
-                <Button  Grid.Row="1" Grid.Column="2" x:Name="openSaveFolder" Margin="10,7.5,10,15" Content="打开存储文件夹" Padding="5" MinHeight="22" Command="{Binding OpenSaveFloderCommand}"/>
-                <TextBox Grid.Row="0" Grid.Column="1" x:Name="ruleFilePath"   Margin="5,15,10,8"    MinHeight="22" MaxLines="1" VerticalContentAlignment="Center" IsReadOnly="True" Text="{Binding RulePath}"/>
-                <TextBox Grid.Row="1" Grid.Column="1" x:Name="savePath"       Margin="5,7.5,10,15"  MinHeight="22" MaxLines="1" VerticalContentAlignment="Center" IsReadOnly="True" Text="{Binding SavePath}"/>
+
+                <Button  Grid.Row="0" Grid.Column="0" x:Name="SelectRulePath" Margin="10,14,5,7"  Content="选择规则文件"   Padding="5" MinHeight="22" Style="{StaticResource ButtonStyle}" Command="{Binding SelectRulePathCommand}" Width="{Binding ElementName=SelectSavePath,Path=ActualWidth}"/>
+                <Button  Grid.Row="1" Grid.Column="0" x:Name="SelectSavePath" Margin="10,7,5,14"  Content="选择存储文件夹" Padding="5" MinHeight="22" Style="{StaticResource ButtonStyle}" Command="{Binding SelectSavePathCommand}"/>
+                <Button  Grid.Row="0" Grid.Column="2" x:Name="FormatSelected" Margin="10,14,10,7" Content="合成选择"       Padding="5" MinHeight="22" Style="{StaticResource ButtonStyle}" Command="{Binding FormatSelectedCommand}" Width="{Binding ElementName=OpenSaveFolder,Path=ActualWidth}"/>
+                <Button  Grid.Row="1" Grid.Column="2" x:Name="OpenSaveFolder" Margin="10,7,10,14" Content="打开存储文件夹" Padding="5" MinHeight="22" Style="{StaticResource ButtonStyle}" Command="{Binding OpenSaveFolderCommand}"/>
+                <TextBox Grid.Row="0" Grid.Column="1" x:Name="RuleFilePath"   Margin="5,14,10,7"  MinHeight="22" MaxLines="1" VerticalContentAlignment="Center" IsReadOnly="True" Text="{Binding RulePath}"/>
+                <TextBox Grid.Row="1" Grid.Column="1" x:Name="SavePath"       Margin="5,7,10,14"  MinHeight="22" MaxLines="1" VerticalContentAlignment="Center" IsReadOnly="True" Text="{Binding SavePath}"/>
             </Grid>
-            <StatusBar Grid.Row="3" VerticalAlignment="Center">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-                    <Label Content="合成名字：" Padding="5,5,0,5" Foreground="#FF464646"/>
-                    <Label x:Name="saveName" Padding="0,5,5,5" FontWeight="Bold" Content="{Binding SaveName}"/>
+            <StatusBar Grid.Row="3" 
+                       VerticalAlignment="Center">
+                <StackPanel 
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center">
+                    <Label 
+                        Content="合成名字：" 
+                        Padding="5,5,0,5" 
+                        Foreground="#FF464646" 
+                        Style="{x:Null}"/>
+                    <Label x:Name="SaveName" 
+                           Padding="0,5,5,5" 
+                           FontWeight="Bold"
+                           Content="{Binding SaveName}"
+                           Style="{x:Null}"/>
                 </StackPanel>
             </StatusBar>
         </Grid>

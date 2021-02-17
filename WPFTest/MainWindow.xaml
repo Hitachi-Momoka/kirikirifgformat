@@ -5,25 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPFTest"
         mc:Ignorable="d"
-        Title="MainWindow" Height="300" Width="800" Loaded="Window_Loaded">
-    <Window.Resources>
-        <local:SelectedItemsToText x:Key="S2T"/>
-    </Window.Resources>
-    <Grid ShowGridLines="True">
+        Title="MainWindow" Height="800" Width="800">
+    <Grid ShowGridLines="False">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="3*"/>
             <ColumnDefinition/>
+            <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
-        <Grid Grid.Column="0" ShowGridLines="True" x:Name="G1">
-            <Grid.ColumnDefinitions >
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
-            <ListBox x:Name="LB1" Grid.Column="0" Margin="3" SelectionMode="Single" DisplayMemberPath="Str" SelectionChanged="LB1_SelectionChanged"/>
-            <ListBox x:Name="LB2" Grid.Column="1" Margin="3" SelectionMode="Single" DisplayMemberPath="Str" SelectionChanged="LB1_SelectionChanged"/>
-            <ListBox x:Name="LB3" Grid.Column="2" Margin="3" SelectionMode="Single" DisplayMemberPath="Str" SelectionChanged="LB1_SelectionChanged"/>
-        </Grid>
-        <TextBox x:Name="TB1" Grid.Column="1" Margin="3" IsReadOnly="True" Text="{Binding Source=lst, Converter={StaticResource S2T}, Mode=OneWay}"/>
+        <Border BorderBrush="Gray"  BorderThickness="0,0,1,0"/>
+        <ListBox x:Name="list" AllowDrop="True" Margin="5" Grid.Column="0" Drop="lst_Drop" DragEnter="lst_DragEnter" SelectionChanged="lst_SelectionChanged"></ListBox>
+        <Image x:Name="box" Grid.Column="1" Margin="5"/>
     </Grid>
 </Window>

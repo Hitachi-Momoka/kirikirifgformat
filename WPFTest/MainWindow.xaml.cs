@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Li.Drawing.Wpf;
 
 namespace WPFTest
 {
@@ -22,32 +23,42 @@ namespace WPFTest
     /// </summary>
     public partial class MainWindow : Window
     {
-
-        ObservableCollection<ViewListItem> lst = new ObservableCollection<ViewListItem>();
         public MainWindow()
         {
             InitializeComponent();
         }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void lst_Drop(object sender, DragEventArgs e)
         {
-            LB1.ItemsSource = new ObservableCollection<ViewListItem>() { new ViewListItem() { Str = "list" }, new ViewListItem() { Str = "box" }, new ViewListItem() { Str = "one" } };
-            LB2.ItemsSource = new ObservableCollection<ViewListItem>() { new ViewListItem() { Str = "list" }, new ViewListItem() { Str = "box" }, new ViewListItem() { Str = "two" } };
-            LB3.ItemsSource = new ObservableCollection<ViewListItem>() { new ViewListItem() { Str = "list" }, new ViewListItem() { Str = "box" }, new ViewListItem() { Str = "three" } };
-        }
-
-        private void LB1_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            
-            TB1.Text = "";
-            foreach (var item in G1.Children)
+            ListBox listBox = sender as ListBox;
+            listBox.ItemsSource = null;
+            var array = (string[])e.Data.GetData(DataFormats.FileDrop);
+            var obsList = new ObservableCollection<string>();
+            foreach (var item in array)
             {
-                ListBox lb = item as ListBox;
-                if(lb.SelectedItem!=null)
+                string ext = System.IO.Path.GetExtension(item).ToLower();
+                if (ext == ".png" || ext == ".tlg")
                 {
-                    lst.Add(new ViewListItem() { Str = lb.SelectedItem.ToString() });
+                    obsList.Add(item);
                 }
             }
+            listBox.ItemsSource = obsList;
+        }
+
+        private void lst_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effects = DragDropEffects.All;
+            }
+            else
+            {
+                e.Effects = DragDropEffects.None;
+            }
+        }
+
+        private void lst_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            box.Source = WPFPictureHelper.GreateBitmapFromFile(list.SelectedItem.ToString());
         }
     }
 }
