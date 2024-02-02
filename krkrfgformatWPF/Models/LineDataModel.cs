@@ -102,19 +102,19 @@ namespace Li.Krkr.krkrfgformatWPF.Models
         }
         public LineDataModel()
         {
-            LayerType = default;
-            Name = default;
-            Left = default;
-            Top = default;
-            Width = default;
-            Height = default;
-            Type = default;
-            Opacity = default;
-            Visible = default;
-            LayerId = default;
-            GroupLayerId = default;
-            Base = default;
-            Images = default;
+            LayerType = "";
+            Name = "";
+            Left = "";
+            Top = "";
+            Width = "";
+            Height = "";
+            Type = "";
+            Opacity = "";
+            Visible = "";
+            LayerId = "";
+            GroupLayerId = "";
+            Base = "";
+            Images = "";
         }
 
         public static LineDataModel CreatFromLineString(string line)
@@ -148,29 +148,31 @@ namespace Li.Krkr.krkrfgformatWPF.Models
         }
         public override string ToString()
         {
-            string tmp = "";
-            tmp += (this.LayerType + "\t");
-            tmp += (this.Name + "\t");
-            tmp += (this.Left + "\t");
-            tmp += (this.Top + "\t");
-            tmp += (this.Width + "\t");
-            tmp += (this.Height + "\t");
-            tmp += (this.Type + "\t");
-            tmp += (this.Opacity + "\t");
-            tmp += (this.Visible + "\t");
-            tmp += (this.LayerId + "\t");
-            tmp += (this.GroupLayerId + "\t");
-            tmp += (this.Base + "\t");
-            tmp += (this.Images + "\t");
-            return tmp;
+            StringBuilder tmp = new StringBuilder()
+            .Append(this.LayerType + "\t")
+            .Append(this.Name + "\t")
+            .Append(this.Left + "\t")
+            .Append(this.Top + "\t")
+            .Append(this.Width + "\t")
+            .Append(this.Height + "\t")
+            .Append(this.Type + "\t")
+            .Append(this.Opacity + "\t")
+            .Append(this.Visible + "\t")
+            .Append(this.LayerId + "\t")
+            .Append(this.GroupLayerId + "\t")
+            .Append(this.Base + "\t")
+            .Append(this.Images + "\t");
+            return tmp.ToString();
         }
         public Rect ToRect()
         {
-            Rect rect = default;
-            rect.X = Convert.ToInt32(this.Left);
-            rect.Y = Convert.ToInt32(this.Top);
-            rect.Width = Convert.ToInt32(this.Width);
-            rect.Height = Convert.ToInt32(this.Height);
+            Rect rect = new Rect
+            {
+                X = Convert.ToInt32(this.Left),
+                Y = Convert.ToInt32(this.Top),
+                Width = Convert.ToInt32(this.Width),
+                Height = Convert.ToInt32(this.Height)
+            };
             return rect;
         }
     }

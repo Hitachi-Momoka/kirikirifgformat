@@ -44,7 +44,7 @@
                     BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" 
                     BorderThickness="1" 
                     CornerRadius="3">
-                <Grid x:Name="BasePanal">
+                <Grid x:Name="BasePanel">
                     <Grid.RowDefinitions>
                         <RowDefinition/>
                         <RowDefinition Height="75"/>
@@ -53,7 +53,7 @@
                         <Canvas.Background>
                             <ImageBrush TileMode="FlipX" Opacity="0" Viewport="0,0,0.02,0.02" ViewportUnits="RelativeToBoundingBox" ImageSource="Resources/BackGroundBaseBrushImage.png"/>
                         </Canvas.Background>
-                        <Grid x:Name="ImageBoxPanal"
+                        <Grid x:Name="ImageBoxPanel"
                               Canvas.Top="0"
                               Canvas.Left="0"
                               Width="{Binding ElementName=ImageCanvas,Path=ActualWidth}"
@@ -76,7 +76,7 @@
                             </Image>
                         </Grid>
                     </Canvas>
-                    <Grid x:Name="ZoomPanal" 
+                    <Grid x:Name="ZoomPanel" 
                           Grid.RowSpan="2" 
                           Opacity="0"
                           IsHitTestVisible="True">
@@ -95,7 +95,7 @@
                                    Content="{Binding ElementName=ZoomPercentControlGrid,Path=Content}"/>
                         </Border>
                     </Grid>
-                    <Grid x:Name="ActionPanal" 
+                    <Grid x:Name="ActionPanel" 
                           Grid.Row="1" 
                           Opacity="0" 
                           Style="{StaticResource AutoHiddenGrid}">
@@ -110,7 +110,7 @@
                                        VerticalAlignment="Center">
                                 <Button x:Name="ZoomInButton" 
                                         Margin="5,0,2,0" 
-                                        Padding="0,0" Style="{StaticResource ActionPanalButtonStyle}">
+                                        Padding="0,0" Style="{StaticResource ActionPanelButtonStyle}">
                                     <Button.Content>
                                         <Path Width="25" 
                                               Height="25" 
@@ -129,7 +129,7 @@
                                        Margin="0,0" 
                                        Padding="0" 
                                        Width="50" 
-                                       Style="{StaticResource ActionPanalLabelStyle}">
+                                       Style="{StaticResource ActionPanelLabelStyle}">
                                     <Label.Content>
                                         <Grid Width="{Binding ElementName=ZoomPercentLabel,Path=Width}" 
                                               Height="{Binding ElementName=ZoomPercentLabel,Path=ActualHeight}">
@@ -147,7 +147,7 @@
                                 <Button x:Name="ZoomOutButton" 
                                         Margin="2,0" 
                                         Padding="3,0" 
-                                        Style="{StaticResource ActionPanalButtonStyle}">
+                                        Style="{StaticResource ActionPanelButtonStyle}">
                                     <Button.Content>
                                         <Path Width="25" 
                                               Height="25" 
@@ -161,12 +161,12 @@
                                         </Path>
                                     </Button.Content>
                                 </Button>
-                                <Button x:Name="OrignalImageSizeButton" 
+                                <Button x:Name="OriginalImageSizeButton" 
                                         Margin="2,0" 
                                         Padding="3,0" 
-                                        Style="{StaticResource ActionPanalButtonStyle}">
+                                        Style="{StaticResource ActionPanelButtonStyle}">
                                     <Button.Content>
-                                        <Border BorderBrush="{Binding ElementName=OrignalImageSizeButton,Path=Foreground}"
+                                        <Border BorderBrush="{Binding ElementName=OriginalImageSizeButton,Path=Foreground}"
                                                 BorderThickness="1" 
                                                 CornerRadius="3">
                                             <TextBlock Padding="3,1" 
@@ -198,9 +198,9 @@
             <Border Grid.Row="3" x:Name="Panel4" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1,0,0,1"/>
 
             <ToolBar Grid.Row="0" Background="#FFEEF5FD">
-                <Button x:Name="ClearAll"      Content="清空所有"   Margin="4"  Click="clearAll_Click"      Command="{Binding ClearAllCommand}"></Button>
+                <Button x:Name="ClearAll"      Content="清空所有"   Margin="4"  Click="clearAll_Click"      Command="{Binding ClearAllCommand}" />
                 <Separator/>
-                <Button x:Name="ClearSelected" Content="清空选择"   Margin="4"  Click="clearSelected_Click" Command="{Binding ClearSelectedCommand}"></Button>
+                <Button x:Name="ClearSelected" Content="清空选择"   Margin="4"  Click="clearSelected_Click" Command="{Binding ClearSelectedCommand}" />
                 <Separator/>
                 <CheckBox x:Name="SideOnly"    Content="用边长寻找" Margin="4"  ToolTip="可以解决一些无法获取正确坐标的问题" IsChecked="{Binding IsSideOnly}"/>
                 <Separator/>
@@ -251,8 +251,8 @@
                 <Button  Grid.Row="1" Grid.Column="0" x:Name="SelectSavePath" Margin="10,7,5,14"  Content="选择存储文件夹" Padding="5" MinHeight="22" Style="{StaticResource ButtonStyle}" Command="{Binding SelectSavePathCommand}"/>
                 <Button  Grid.Row="0" Grid.Column="2" x:Name="FormatSelected" Margin="10,14,10,7" Content="合成选择"       Padding="5" MinHeight="22" Style="{StaticResource ButtonStyle}" Command="{Binding FormatSelectedCommand}" Width="{Binding ElementName=OpenSaveFolder,Path=ActualWidth}"/>
                 <Button  Grid.Row="1" Grid.Column="2" x:Name="OpenSaveFolder" Margin="10,7,10,14" Content="打开存储文件夹" Padding="5" MinHeight="22" Style="{StaticResource ButtonStyle}" Command="{Binding OpenSaveFolderCommand}"/>
-                <TextBox Grid.Row="0" Grid.Column="1" x:Name="RuleFilePath"   Margin="5,14,10,7"  MinHeight="22" MaxLines="1" VerticalContentAlignment="Center" IsReadOnly="True" Text="{Binding RulePath}"/>
-                <TextBox Grid.Row="1" Grid.Column="1" x:Name="SavePath"       Margin="5,7,10,14"  MinHeight="22" MaxLines="1" VerticalContentAlignment="Center" IsReadOnly="True" Text="{Binding SavePath}"/>
+                <TextBox Grid.Row="0" Grid.Column="1" x:Name="RuleFilePath"   Margin="5,14,10,7"  MinHeight="22" MaxLines="1" VerticalContentAlignment="Center" IsReadOnly="True" Text="{Binding RulePath,Mode=OneWay}"/>
+                <TextBox Grid.Row="1" Grid.Column="1" x:Name="SavePath"       Margin="5,7,10,14"  MinHeight="22" MaxLines="1" VerticalContentAlignment="Center" IsReadOnly="True" Text="{Binding SavePath,Mode=OneWay}"/>
             </Grid>
             <StatusBar Grid.Row="3" 
                        VerticalAlignment="Center">

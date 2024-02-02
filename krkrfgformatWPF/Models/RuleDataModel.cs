@@ -35,16 +35,16 @@ namespace Li.Krkr.krkrfgformatWPF.Models
 
         public LineDataModel GetLineDataByID(int id)
         {
-            return this.TextData.Find(t => t.LayerId == id.ToString());
+            return this.TextData.First(t => t.LayerId == id.ToString());
         }
         public LineDataModel GetLineDataBySize(int w,int h)
         {
-            return this.TextData.Find(t => Convert.ToInt32(t.Width) == w && Convert.ToInt32(t.Height) == h);
+            return this.TextData.First(t => Convert.ToInt32(t.Width) == w && Convert.ToInt32(t.Height) == h);
         }
 
         public List<LineDataModel> GetLineDatasByGroupLayerID(int id)
         {
-            return this.TextData.FindAll(t => t.GroupLayerId == id.ToString());
+            return this.TextData.Where(t => t.GroupLayerId == id.ToString()).ToList();
         }
 
         public static int GetLineDataVisible(LineDataModel lineData)

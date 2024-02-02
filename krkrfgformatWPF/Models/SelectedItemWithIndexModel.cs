@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Li.Krkr.krkrfgformatWPF.Models
 {
-    public class SelectedItemWithIndexModel
+    public  class SelectedItemWithIndexModel
     {
         public int Index { get; set; }
         public object SelectedItem { get; set; }

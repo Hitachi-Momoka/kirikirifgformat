@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Li.Krkr.krkrfgformatWPF.Servises;
+using Li.Krkr.krkrfgformatWPF.Serves;
 using Li.Krkr.krkrfgformatWPF.Models;
 
 namespace Li.Krkr.krkrfgformatWPF.ViewModes
@@ -29,7 +29,7 @@ namespace Li.Krkr.krkrfgformatWPF.ViewModes
 
         public SelectedItemWithIndexModel SelectItemTmp
         {
-            get { return _selectItemTmp; }
+            get => _selectItemTmp;
             set
             {
                 _selectItemTmp = value;
@@ -47,7 +47,7 @@ namespace Li.Krkr.krkrfgformatWPF.ViewModes
 
         public SortedDictionary<int, Tuple<string, BitmapSource>> AllItems
         {
-            get { return _allItems; }
+            get => _allItems;
             set 
             {
                 _allItems = value;
@@ -59,11 +59,11 @@ namespace Li.Krkr.krkrfgformatWPF.ViewModes
 
         public string RulePath
         {
-            get { return _rulePath; }
+            get => _rulePath;
             set
             {
                 _rulePath = value;
-                _ruleData = RuleDataServises.CreatFromFile(RulePath);
+                RuleData = RuleDataServes.CreateFromFile(RulePath);
                 base.RaisePropertyChanged();
             }
         }
@@ -72,7 +72,7 @@ namespace Li.Krkr.krkrfgformatWPF.ViewModes
 
         public string SavePath
         {
-            get { return _savePath; }
+            get => _savePath;
             set
             {
                 _savePath = value;
@@ -84,7 +84,7 @@ namespace Li.Krkr.krkrfgformatWPF.ViewModes
 
         public string SaveName
         {
-            get { return _saveName; }
+            get => _saveName;
             set
             {
                 _saveName = value;
@@ -95,7 +95,7 @@ namespace Li.Krkr.krkrfgformatWPF.ViewModes
         private bool _isSideOnly;
         public bool IsSideOnly
         {
-            get { return _isSideOnly; }
+            get => _isSideOnly;
             set
             {
                 _isSideOnly = value;
@@ -108,7 +108,7 @@ namespace Li.Krkr.krkrfgformatWPF.ViewModes
 
         public ImageSource ImageBoxSource
         {
-            get { return _imageBoxSource; }
+            get => _imageBoxSource;
             set
             {
                 _imageBoxSource = value;
@@ -116,15 +116,8 @@ namespace Li.Krkr.krkrfgformatWPF.ViewModes
             }
         }
 
-        private RuleDataModel _ruleData;
-        public RuleDataModel RuleData
-        {
-            get => this._ruleData;
-            set
-            {
-                this._ruleData = value;
-            }
-        }
+        public RuleDataModel RuleData { get; set; }
+
         #endregion
 
         public MainWindowViewModel()
@@ -140,7 +133,7 @@ namespace Li.Krkr.krkrfgformatWPF.ViewModes
             _isSideOnly = false;
             _savePath = "";
             _saveName = "";
-            _ruleData = null;
+            RuleData = null;
             _imageBoxSource = null;
             _allItems = new SortedDictionary<int, Tuple<string, BitmapSource>>();
             

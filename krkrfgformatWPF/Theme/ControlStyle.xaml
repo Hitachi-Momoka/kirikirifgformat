@@ -157,13 +157,13 @@
         </Style.Triggers>
     </Style>
     
-    <Style x:Key="ActionPanalLabelStyle" TargetType="{x:Type Label}">
+    <Style x:Key="ActionPanelLabelStyle" TargetType="{x:Type Label}">
         <Setter Property="Background"      Value="Transparent"/>
         <Setter Property="Foreground"      Value="{StaticResource ActionButtonMouseOn}"/>
         <Setter Property="FontSize"        Value="18"/>
     </Style>
 
-    <Style x:Key="ActionPanalButtonStyle" BasedOn="{StaticResource ButtonBaseStyle}"  TargetType="{x:Type Button}">
+    <Style x:Key="ActionPanelButtonStyle" BasedOn="{StaticResource ButtonBaseStyle}"  TargetType="{x:Type Button}">
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Background"      Value="Transparent"/>
         <Setter Property="Foreground"      Value="{StaticResource ActionButtonMouseLeave}"/>

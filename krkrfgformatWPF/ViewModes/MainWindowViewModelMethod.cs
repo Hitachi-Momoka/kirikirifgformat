@@ -5,12 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Media.Imaging;
 
 using Li.Drawing.Wpf;
 using Li.Krkr.krkrfgformatWPF.Helper;
 using Li.Krkr.krkrfgformatWPF.Models;
+using static System.IO.Path;
 
 namespace Li.Krkr.krkrfgformatWPF.ViewModes
 {
@@ -19,10 +21,10 @@ namespace Li.Krkr.krkrfgformatWPF.ViewModes
     {
         private string GetRulePath(string imagePath)
         {
-            string dir = System.IO.Path.GetDirectoryName(imagePath);
-            var namePart = System.IO.Path.GetFileNameWithoutExtension(imagePath).Split('_');
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < namePart.Length - 1; i++)
+            var dir = GetDirectoryName(imagePath);
+            var namePart = GetFileNameWithoutExtension(imagePath).Split('_');
+            var sb = new StringBuilder();
+            for (var i = 0; i < namePart.Length - 1; i++)
             {
                 sb.Append(namePart[i]);
                 if (i < namePart.Length - 2)
@@ -30,39 +32,28 @@ namespace Li.Krkr.krkrfgformatWPF.ViewModes
                     sb.Append('_');
                 }
             }
-            string ruleFileName = sb.ToString();
-            foreach (var format in SupportedFileExtension.RuleDataExtension)
-            {
-                string tmpPath = $"{dir}\\{ruleFileName}{format}";
-                if (File.Exists(tmpPath))
-                    return tmpPath;
-            }
-            return null;
+            var ruleFileName = sb.ToString();
+            return SupportedFileExtension.RuleDataExtension.Select(format => $"{dir}\\{ruleFileName}{format}").FirstOrDefault(File.Exists);
         }
 
         private string CreateDefaultSavePath(string v)
         {
-            var newDir = System.IO.Path.GetDirectoryName(v) + @"\合成输出\";
-            if(!System.IO.Directory.Exists(newDir))
+            var newDir = GetDirectoryName(v) + @"\合成输出\";
+            if(!Directory.Exists(newDir))
             {
-                System.IO.Directory.CreateDirectory(newDir);
+                Directory.CreateDirectory(newDir);
             }
             return newDir;
         }
         private void UpDataAllItems(SelectedItemWithIndexModel item)
         {
             if (item == null) return;
-            bool needtodelect = false;
-            foreach (var i in AllItems)
-            {
-                if(i.Key==item.Index)
-                {
-                    needtodelect = true;
-                    break;
-                }
-            }
-            if (needtodelect) { AllItems.Remove(item.Index); }
-            AllItems.Add(item.Index, new Tuple<string, BitmapSource>(item.SelectedItem.ToString(), WPFPictureHelper.CreateBitmapFromFile(item.SelectedItem.ToString())));
+            var needToDelete = AllItems.Any(i => i.Key == item.Index);
+            if (needToDelete) { AllItems.Remove(item.Index); }
+            AllItems.Add(item.Index,
+                new Tuple<string, BitmapSource>(item.SelectedItem.ToString(),
+                                                WPFPictureHelper.CreateBitmapFromFile(item.SelectedItem.ToString())
+                                                ));
             UpdateImage();
         }
         private void UpdateImage()
@@ -73,8 +64,8 @@ namespace Li.Krkr.krkrfgformatWPF.ViewModes
                 WithoutRuleDataMode();
                 return;
             }
-            string strtmp = System.IO.Path.GetFileNameWithoutExtension(RulePath);
-            PictureMixer mixer = new PictureMixer();
+            var strtmp = GetFileNameWithoutExtension(RulePath);
+            var mixer = new PictureMixer();
             foreach (var item in AllItems)
             {
                 strtmp += "+";
@@ -107,7 +98,7 @@ namespace Li.Krkr.krkrfgformatWPF.ViewModes
                 return;
             }
             if (SelectItemTmp == null) return;
-            BitmapImage image = new BitmapImage(new Uri(this.SelectItemTmp.SelectedItem.ToString()));
+            var image = new BitmapImage(new Uri(this.SelectItemTmp.SelectedItem.ToString()));
             ImageBoxSource = new System.Windows.Media.DrawingImage() { Drawing = new ImageDrawing(image, new Rect(0, 0, image.PixelWidth, image.PixelHeight))};
         }
 
@@ -123,7 +114,7 @@ namespace Li.Krkr.krkrfgformatWPF.ViewModes
         }
         public void SelectRulePath()
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog
+            var openFileDialog = new OpenFileDialog
             {
                 Filter = "文本文档(*.txt)|*.txt|json文件(*.json)|*.json|所有文件 (*.*)|*.*",
             };
