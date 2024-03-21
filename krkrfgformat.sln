@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Blend for Visual Studio Version 16
 VisualStudioVersion = 16.0.29009.5
@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonToTxt", "JsonToTxt\Json
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfoReader", "InfoReader\InfoReader.csproj", "{C820258B-0FFE-437B-85CF-F83273EC0B2F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "krkrfgformatWPF", "krkrfgformatWPF\krkrfgformatWPF.csproj", "{E0DA4364-D379-4E22-8592-6BC641821E61}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "krkrfgformatWPF", "krkrfgformatWPF\krkrfgformatWPF.csproj", "{E0DA4364-D379-4E22-8592-6BC641821E61}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{79689D05-B855-4846-9DC7-B3AB65C8D8B8}"
 EndProject

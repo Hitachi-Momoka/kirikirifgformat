@@ -1,7 +1,4 @@
-﻿using Li.Krkr.krkrfgformatWPF;
-using Li.Krkr.krkrfgformatWPF.Converter;
-using Li.Krkr.krkrfgformatWPF.ViewModes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -17,6 +14,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Li.Krkr.krkrfgformatWPF;
+using Li.Krkr.krkrfgformatWPF.Converter;
+using Li.Krkr.krkrfgformatWPF.ViewModes;
 
 namespace Li.Krkr.krkrfgformatWPF
 {
@@ -26,99 +26,88 @@ namespace Li.Krkr.krkrfgformatWPF
     public partial class MainWindow : Window
     {
         private bool isFullWindow = false;
+
         public MainWindow()
         {
             InitializeComponent();
             this.SetSelectedItemBinding();
         }
 
-        private void addNewBox_Click(object sender, RoutedEventArgs e)
+        private void AddNewBox_Click(object sender, RoutedEventArgs e)
         {
             var index = FileGrid.Children.IndexOf((Button)sender);
-            var box1 = new ListBox()
-            {
-                Style = (Style)FindResource("MWListBox") ?? default
-            };
-            box1.SetBinding(ListBox.SelectedItemProperty, new Binding()
-            {
-                Path = new PropertyPath("SelectItemTmp"),
-                Mode = BindingMode.TwoWay,
-                Converter = new SelectedItemCombineIndexConverter(),
-                ConverterParameter = index
-            });
+            var box1 = new ListBox { Style = (Style)FindResource("MWListBox") };
+            box1.SetBinding(
+                Selector.SelectedItemProperty,
+                new Binding()
+                {
+                    Path = new PropertyPath("SelectedItemTemp"),
+                    Mode = BindingMode.TwoWay,
+                    Converter = new SelectedItemCombineIndexConverter(),
+                    ConverterParameter = index
+                }
+            );
             FileGrid.Children.Insert(index, box1);
         }
+
         private void ListBox_Drop(object sender, DragEventArgs e)
         {
-            ListBox listBox = sender as ListBox;
+            var listBox = (ListBox)sender;
             listBox.ItemsSource = null;
-            var array = (string[])e.Data.GetData(DataFormats.FileDrop);
-            var obsList = new ObservableCollection<string>();
-            foreach (var item in array)
+            var data = (string[])e.Data.GetData(DataFormats.FileDrop);
+            var obs = new ObservableCollection<string>();
+            var items = data.Where(item =>
             {
-                string ext = System.IO.Path.GetExtension(item).ToLower();
-                if (ext == ".png" || ext == ".tlg")
-                {
-                    obsList.Add(item);
-                }
+                var ext = System.IO.Path.GetExtension(item).ToLower();
+                return Helper.SupportedFileExtension.ImageExtension.Any(ex => ex.Equals(ext));
+            });
+            foreach (var item in items)
+            {
+                obs.Add(item);
             }
-            listBox.ItemsSource = obsList;
+            listBox.ItemsSource = obs;
         }
 
         private void ListBox_DragEnter(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
-            {
-                e.Effects = DragDropEffects.All;
-            }
-            else
-            {
-                e.Effects = DragDropEffects.None;
-            }
+            e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop)
+                ? DragDropEffects.All
+                : DragDropEffects.None;
         }
 
         private void SetSelectedItemBinding()
         {
-            foreach (var item in this.FileGrid.Children)
+            foreach (var listBox in this.FileGrid.Children.OfType<ListBox>())
             {
-                if(item is ListBox)
-                {
-                    ListBox listBox = item as ListBox;
-                    int index = this.FileGrid.Children.IndexOf(listBox);
-                    listBox.SetBinding(ListBox.SelectedItemProperty, 
-                        new Binding() { Path = new PropertyPath("SelectItemTmp"), 
-                            Mode = BindingMode.OneWayToSource,
-                            Converter = new SelectedItemCombineIndexConverter(),
-                            ConverterParameter = index 
-                        });
-                }
+                var index = this.FileGrid.Children.IndexOf(listBox);
+                listBox.SetBinding(
+                    Selector.SelectedItemProperty,
+                    new Binding
+                    {
+                        Path = new PropertyPath("SelectedItemTemp"),
+                        Mode = BindingMode.OneWayToSource,
+                        Converter = new SelectedItemCombineIndexConverter(),
+                        ConverterParameter = index
+                    }
+                );
             }
         }
 
-        private void clearAll_Click(object sender, RoutedEventArgs e)
+        private void ClearAll_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var item in this.FileGrid.Children)
+            foreach (var listBox in this.FileGrid.Children.OfType<ListBox>())
             {
-                if (item is ListBox)
-                {
-                    ListBox listBox = item as ListBox;
-                    listBox.ItemsSource = null;
-                }
+                listBox.ItemsSource = null;
             }
             //slider1.Value = slider1.Minimum;
         }
 
-        private void clearSelected_Click(object sender, RoutedEventArgs e)
+        private void ClearSelected_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var item in this.FileGrid.Children)
+            foreach (var listBox in this.FileGrid.Children.OfType<ListBox>())
             {
-                if (item is ListBox)
-                {
-                    ListBox listBox = item as ListBox;
-                    listBox.SelectedIndex = -1;
-                }
+                listBox.SelectedIndex = -1;
             }
         }
-
     }
 }

@@ -1,148 +1,260 @@
-﻿using Prism.Mvvm;
-using Prism.Commands;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Li.Krkr.krkrfgformatWPF.Serves;
+using CommunityToolkit.Mvvm;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Li.Drawing.Wpf;
+using Li.Krkr.krkrfgformatWPF.Helper;
 using Li.Krkr.krkrfgformatWPF.Models;
+using Li.Krkr.krkrfgformatWPF.Serves;
+using Microsoft.Win32;
+using static System.IO.Path;
+using ItemDict = System.Collections.Generic.SortedDictionary<
+    int,
+    System.Tuple<string, System.Windows.Media.Imaging.BitmapSource>
+>;
 
 namespace Li.Krkr.krkrfgformatWPF.ViewModes
 {
-    public partial class MainWindowViewModel : BindableBase
+    public partial class MainWindowViewModel : ObservableObject
     {
-        #region Command
-        public DelegateCommand ClearAllCommand { set; get; }
-        public DelegateCommand ClearSelectedCommand { get; set; }
-        //public DelegateCommand SideOnlyCommand { get; set; }
-        public DelegateCommand HelpButtonCommand { set; get; }
-        public DelegateCommand SelectRulePathCommand { get; set; }
-        public DelegateCommand SelectSavePathCommand { get; set; }
-        public DelegateCommand FormatSelectedCommand { get; set; }
-        public DelegateCommand OpenSaveFolderCommand { get; set; }
-        #endregion
+        private bool messageBoxIsShow = false;
 
-        #region Mumber
-        private bool messageBoxIsShow;
-        
-        private SelectedItemWithIndexModel _selectItemTmp;
+        [ObservableProperty]
+        private SelectedItemWithIndexModel selectedItemTemp = null;
 
-        public SelectedItemWithIndexModel SelectItemTmp
+        [ObservableProperty]
+        private ItemDict allItems = [];
+
+        [ObservableProperty]
+        private string rulePath = "";
+
+        [ObservableProperty]
+        private string ruleName;
+
+        [ObservableProperty]
+        private string savePath = "";
+
+        [ObservableProperty]
+        private string saveName = "";
+
+        [ObservableProperty]
+        private bool isSideOnly = false;
+
+        [ObservableProperty]
+        private ImageSource imageBoxSource = null;
+        private RuleDataModel RuleData { get; set; }
+
+        #region OnPropertyChangede
+
+        partial void OnSelectedItemTempChanged(SelectedItemWithIndexModel value)
         {
-            get => _selectItemTmp;
-            set
+            if (string.IsNullOrEmpty(RulePath))
             {
-                _selectItemTmp = value;
-                if (string.IsNullOrEmpty(RulePath) && this.SelectItemTmp != null)
+                RulePath = GetRulePath(SelectedItemTemp.SelectedItem.ToString());
+                SavePath = CreateDefaultSavePath(SelectedItemTemp.SelectedItem.ToString());
+            }
+            UpDataAllItems(SelectedItemTemp);
+        }
+
+        partial void OnRulePathChanged(string value)
+        {
+            RuleData = RuleDataServes.CreateFromFile(RulePath);
+        }
+
+        partial void OnIsSideOnlyChanged(bool value)
+        {
+            UpdateImage();
+        }
+
+        private void UpDataAllItems(SelectedItemWithIndexModel item)
+        {
+            if (item == null)
+                return;
+            var needToDelete = AllItems.Any(i => i.Key == item.Index);
+            if (needToDelete)
+            {
+                AllItems.Remove(item.Index);
+            }
+            AllItems.Add(
+                item.Index,
+                new Tuple<string, BitmapSource>(
+                    item.SelectedItem.ToString(),
+                    WPFPictureHelper.CreateBitmapFromFile(item.SelectedItem.ToString())
+                )
+            );
+            UpdateImage();
+        }
+
+        private void UpdateImage()
+        {
+            if (AllItems.Count == 0)
+                return;
+            if (RuleData == null)
+            {
+                WithoutRuleDataMode();
+                return;
+            }
+            var strtmp = GetFileNameWithoutExtension(RulePath);
+            var mixer = new PictureMixer();
+            foreach (var item in AllItems)
+            {
+                strtmp += "+";
+                LineDataModel line;
+                if (IsSideOnly)
                 {
-                    RulePath = GetRulePath(SelectItemTmp.SelectedItem.ToString());
-                    SavePath = CreateDefaultSavePath(SelectItemTmp.SelectedItem.ToString());
+                    line = RuleData.GetLineDataBySize(
+                        item.Value.Item2.PixelWidth,
+                        item.Value.Item2.PixelHeight
+                    );
                 }
-                UpDataAllItems(SelectItemTmp);
-                base.RaisePropertyChanged();
+                else
+                {
+                    line = RuleData.GetLineDataById(
+                        Helper.Helper.GetFileCode(item.Value.Item1)
+                    );
+                    ;
+                }
+                strtmp += line.LayerId;
+                mixer.AddPicture(item.Value.Item2, line.ToRect(), Convert.ToInt32(line.Opacity));
             }
+            SaveName = strtmp;
+            ImageBoxSource = mixer.OutImage;
         }
 
-        private SortedDictionary<int,Tuple<string,BitmapSource>> _allItems;
-
-        public SortedDictionary<int, Tuple<string, BitmapSource>> AllItems
+        private void WithoutRuleDataMode()
         {
-            get => _allItems;
-            set 
+            if (!messageBoxIsShow)
             {
-                _allItems = value;
-                this.UpdateImage();
+                var result = MessageBox.Show(
+                    "需要一个规则文件或者规则文件不受支持。\n是否手动选择文件？\n（否只会显示当前最后一次选择的图片。）",
+                    "错误",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question
+                );
+                if (result == MessageBoxResult.Yes)
+                {
+                    SelectRulePath();
+                }
+                messageBoxIsShow = true;
+                return;
             }
+
+            var image = new BitmapImage(
+                new Uri(SelectedItemTemp.SelectedItem.ToString() ?? string.Empty)
+            );
+            ImageBoxSource = new DrawingImage()
+            {
+                Drawing = new ImageDrawing(
+                    image,
+                    new Rect(0, 0, image.PixelWidth, image.PixelHeight)
+                )
+            };
         }
 
-        private string _rulePath;
-
-        public string RulePath
+        private string CreateDefaultSavePath(string v)
         {
-            get => _rulePath;
-            set
+            var newDir = GetDirectoryName(v) + @"\合成输出\";
+            if (!Directory.Exists(newDir))
             {
-                _rulePath = value;
-                RuleData = RuleDataServes.CreateFromFile(RulePath);
-                base.RaisePropertyChanged();
+                Directory.CreateDirectory(newDir);
             }
+            return newDir;
         }
 
-        private string _savePath;
-
-        public string SavePath
+        private string GetRulePath(string imagePath)
         {
-            get => _savePath;
-            set
+            var dir = GetDirectoryName(imagePath);
+            var namePart = GetFileNameWithoutExtension(imagePath).Split('_');
+            var sb = new StringBuilder();
+            for (var i = 0; i < namePart.Length - 1; i++)
             {
-                _savePath = value;
-                base.RaisePropertyChanged();
+                sb.Append(namePart[i]);
+                if (i < namePart.Length - 2)
+                {
+                    sb.Append('_');
+                }
             }
+            var ruleFileName = sb.ToString();
+            return SupportedFileExtension
+                .RuleDataExtension.Select(format => @$"{dir}\{ruleFileName}{format}")
+                .FirstOrDefault(File.Exists);
         }
-
-        private string _saveName;
-
-        public string SaveName
-        {
-            get => _saveName;
-            set
-            {
-                _saveName = value;
-                base.RaisePropertyChanged();
-            }
-        }
-
-        private bool _isSideOnly;
-        public bool IsSideOnly
-        {
-            get => _isSideOnly;
-            set
-            {
-                _isSideOnly = value;
-                base.RaisePropertyChanged();
-                UpdateImage();
-                //this.CollectionChanged(null,null);//选择状态变化就引起一次合成刷新。
-            }
-        }
-        private ImageSource _imageBoxSource;
-
-        public ImageSource ImageBoxSource
-        {
-            get => _imageBoxSource;
-            set
-            {
-                _imageBoxSource = value;
-                base.RaisePropertyChanged();
-            }
-        }
-
-        public RuleDataModel RuleData { get; set; }
 
         #endregion
 
-        public MainWindowViewModel()
+        #region RelayCommand
+
+        [RelayCommand]
+        public void FormatSelected()
         {
-            this.Init();
+            BitmapEncoder encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(((DrawingImage)ImageBoxSource).ToBitmapSource()));
+            using var stream = new FileStream($"{SavePath}\\{SaveName}.png", FileMode.Create);
+            encoder.Save(stream);
         }
-        private void Init()
+
+        [RelayCommand]
+        public void SelectRulePath()
         {
+            var openFileDialog = new OpenFileDialog
+            {
+                Filter = "文本文档(*.txt)|*.txt|json文件(*.json)|*.json|所有文件 (*.*)|*.*",
+            };
+            if (openFileDialog.ShowDialog() == true)
+            {
+                RulePath = openFileDialog.FileName;
+            }
+        }
+
+        [RelayCommand]
+        public void OpenSaveFolder()
+        {
+            if (!string.IsNullOrEmpty(SavePath))
+                System.Diagnostics.Process.Start("explorer.exe", SavePath);
+        }
+
+        [RelayCommand(CanExecute = "CantExecute")]
+        public void SelectSavePath() { }
+
+        private bool CantExecute()
+        {
+            return false;
+        }
+
+        [RelayCommand]
+        public void ClearSelected()
+        {
+            AllItems.Clear();
+            ImageBoxSource = null;
+            GC.Collect();
+        }
+
+        [RelayCommand]
+        public void ClearAll()
+        {
+            messageBoxIsShow = true;
+
+            SelectedItemTemp = null;
+            RulePath = "";
+            IsSideOnly = false;
+            SavePath = "";
+            SaveName = "";
+            RuleData = null;
+            ImageBoxSource = null;
+
+            AllItems = [];
             messageBoxIsShow = false;
 
-            _selectItemTmp = null;
-            _rulePath = "";
-            _isSideOnly = false;
-            _savePath = "";
-            _saveName = "";
-            RuleData = null;
-            _imageBoxSource = null;
-            _allItems = new SortedDictionary<int, Tuple<string, BitmapSource>>();
-            
-            this.SelectSavePathCommand = new DelegateCommand(this.EmptyMethod, () => false); //关闭按钮，不予以支持
-            this.ClearSelectedCommand = new DelegateCommand(this.ClearSelected);
-            this.ClearAllCommand = new DelegateCommand(this.ClearAll);
-            this.FormatSelectedCommand = new DelegateCommand(this.FormatSelected);
-            this.SelectRulePathCommand = new DelegateCommand(this.SelectRulePath);
-            this.OpenSaveFolderCommand = new DelegateCommand(this.OpenSaveFolder);
+            GC.Collect();
         }
+        #endregion
     }
 }

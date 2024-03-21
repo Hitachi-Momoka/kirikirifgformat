@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Li.Krkr.krkrfgformatWPF.Models
 {
-    interface IKRKRImageData
+    internal interface IKrkrImageData
     {
         string LayerType { get; }
         string Name { get; }

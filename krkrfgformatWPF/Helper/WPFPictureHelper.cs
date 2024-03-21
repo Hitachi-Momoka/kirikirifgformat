@@ -263,12 +263,12 @@ namespace Li.Drawing.Wpf
     }
     public class PictureMixer
     {
-        public DrawingImage OutImage => new DrawingImage() { Drawing = Group };
-        public DrawingGroup Group { set; get; } = new DrawingGroup() { Opacity = 1 };
+        public DrawingImage OutImage => new() { Drawing = Group };
+        public DrawingGroup Group { set; get; } = new() { Opacity = 1 };
 
         public void AddPicture(BitmapSource bitmapSource, Rect rect, int opacity)
         {
-            DrawingGroup group = new DrawingGroup
+            var group = new DrawingGroup
             {
                 Opacity = opacity / 255d
             };

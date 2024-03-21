@@ -10,17 +10,24 @@
         xmlns:converter="clr-namespace:Li.Krkr.krkrfgformatWPF.Converter"
         xmlns:mainvm ="clr-namespace:Li.Krkr.krkrfgformatWPF.ViewModes"
         mc:Ignorable="d"
-        Title="KRKR立绘合成 BY：HitachiMomoka" Height="720" Width="1280" MinHeight="480" MinWidth="720" Icon="icon.ico" SnapsToDevicePixels="True">
+        d:DataContext="{d:DesignInstance mainvm:MainWindowViewModel}"
+        Title="KRKR立绘合成 BY：HitachiMomoka" 
+        Height="720" Width="1280" 
+        MinHeight="480" MinWidth="720" 
+        Icon="icon.ico" 
+        SnapsToDevicePixels="True">
     <Window.DataContext>
         <mainvm:MainWindowViewModel/>
     </Window.DataContext>
     <Window.Resources>
         <converter:ScaleTransformToPercent x:Key="ScaleTransformToPercent"/>
-        <Style x:Key="MWListBox" BasedOn="{StaticResource CustomListBox}" TargetType="ListBox">
-            <EventSetter Event="Drop"      
-                     Handler="ListBox_Drop"/>
+        <Style x:Key="MWListBox" 
+               BasedOn="{StaticResource CustomListBox}" 
+               TargetType="ListBox">
+            <EventSetter Event="Drop" 
+                         Handler="ListBox_Drop"/>
             <EventSetter Event="DragEnter" 
-                     Handler="ListBox_DragEnter"/>
+                         Handler="ListBox_DragEnter"/>
         </Style>
     </Window.Resources>
     <Grid x:Name="MainGrid" 
@@ -49,9 +56,15 @@
                         <RowDefinition/>
                         <RowDefinition Height="75"/>
                     </Grid.RowDefinitions>
-                    <Canvas x:Name="ImageCanvas" Grid.RowSpan="2" Margin="1">
+                    <Canvas x:Name="ImageCanvas" 
+                            Grid.RowSpan="2" 
+                            Margin="1">
                         <Canvas.Background>
-                            <ImageBrush TileMode="FlipX" Opacity="0" Viewport="0,0,0.02,0.02" ViewportUnits="RelativeToBoundingBox" ImageSource="Resources/BackGroundBaseBrushImage.png"/>
+                            <ImageBrush TileMode="FlipX" 
+                                        Opacity="0" 
+                                        Viewport="0,0,0.02,0.02" 
+                                        ViewportUnits="RelativeToBoundingBox" 
+                                        ImageSource="Resources/BackGroundBaseBrushImage.png"/>
                         </Canvas.Background>
                         <Grid x:Name="ImageBoxPanel"
                               Canvas.Top="0"
@@ -76,7 +89,8 @@
                             </Image>
                         </Grid>
                     </Canvas>
-                    <Grid x:Name="ZoomPanel" 
+                    <Grid x:Name="ZoomPanel"
+                          Grid.Row="0" 
                           Grid.RowSpan="2" 
                           Opacity="0"
                           IsHitTestVisible="True">
@@ -198,13 +212,26 @@
             <Border Grid.Row="3" x:Name="Panel4" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1,0,0,1"/>
 
             <ToolBar Grid.Row="0" Background="#FFEEF5FD">
-                <Button x:Name="ClearAll"      Content="清空所有"   Margin="4"  Click="clearAll_Click"      Command="{Binding ClearAllCommand}" />
+                <Button x:Name="ClearAll"
+                        Content="清空所有"
+                        Margin="4"  Click="ClearAll_Click"
+                        Command="{Binding ClearAllCommand}" />
                 <Separator/>
-                <Button x:Name="ClearSelected" Content="清空选择"   Margin="4"  Click="clearSelected_Click" Command="{Binding ClearSelectedCommand}" />
+                <Button x:Name="ClearSelected"
+                        Content="清空选择"
+                        Margin="4"
+                        Click="ClearSelected_Click"
+                        Command="{Binding ClearSelectedCommand}" />
                 <Separator/>
-                <CheckBox x:Name="SideOnly"    Content="用边长寻找" Margin="4"  ToolTip="可以解决一些无法获取正确坐标的问题" IsChecked="{Binding IsSideOnly}"/>
+                <CheckBox x:Name="SideOnly"
+                          Content="用边长寻找"
+                          Margin="4"
+                          ToolTip="可以解决一些无法获取正确坐标的问题"
+                          IsChecked="{Binding IsSideOnly}"/>
                 <Separator/>
-                <Button x:Name="HelpButton"    Content="Help"       Margin="4"/>
+                <Button x:Name="HelpButton"
+                        Content="Help"
+                        Margin="4"/>
                 <Label Content="{Binding ElementName=ImageBox, Path=Source.Width}"/>
                 <Label Content="{Binding ElementName=ImageBox, Path=Source.Height}"/>
 
@@ -229,7 +256,12 @@
                     <ListBox Style="{StaticResource MWListBox}"/>
                     <ListBox Style="{StaticResource MWListBox}"/>
                     <ListBox Style="{StaticResource MWListBox}"/>
-                    <Button x:Name="addNewBox" Margin="5" Width="200" Height="250" Content="ADD" Click="addNewBox_Click"/>
+                    <Button x:Name="AddNewBox"
+                            Margin="5" 
+                            Width="200" 
+                            Height="250" 
+                            Content="ADD" 
+                            Click="AddNewBox_Click"/>
                 </WrapPanel>
             </ScrollViewer>
             <Grid Grid.Row="2" ShowGridLines="False">
@@ -245,11 +277,10 @@
 
                 <Border  Grid.Row="0" Grid.Column="2" x:Name="Panel5" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1,0,0,0"/>
                 <Border  Grid.Row="1" Grid.Column="2" x:Name="Panel6" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1,0,0,0"/>
-
-
+                
                 <Button  Grid.Row="0" Grid.Column="0" x:Name="SelectRulePath" Margin="10,14,5,7"  Content="选择规则文件"   Padding="5" MinHeight="22" Style="{StaticResource ButtonStyle}" Command="{Binding SelectRulePathCommand}" Width="{Binding ElementName=SelectSavePath,Path=ActualWidth}"/>
                 <Button  Grid.Row="1" Grid.Column="0" x:Name="SelectSavePath" Margin="10,7,5,14"  Content="选择存储文件夹" Padding="5" MinHeight="22" Style="{StaticResource ButtonStyle}" Command="{Binding SelectSavePathCommand}"/>
-                <Button  Grid.Row="0" Grid.Column="2" x:Name="FormatSelected" Margin="10,14,10,7" Content="合成选择"       Padding="5" MinHeight="22" Style="{StaticResource ButtonStyle}" Command="{Binding FormatSelectedCommand}" Width="{Binding ElementName=OpenSaveFolder,Path=ActualWidth}"/>
+                <Button  Grid.Row="0" Grid.Column="2" x:Name="FormatSelected" Margin="10,14,10,7" Content="合成选择"      Padding="5" MinHeight="22" Style="{StaticResource ButtonStyle}" Command="{Binding FormatSelectedCommand}" Width="{Binding ElementName=OpenSaveFolder,Path=ActualWidth}"/>
                 <Button  Grid.Row="1" Grid.Column="2" x:Name="OpenSaveFolder" Margin="10,7,10,14" Content="打开存储文件夹" Padding="5" MinHeight="22" Style="{StaticResource ButtonStyle}" Command="{Binding OpenSaveFolderCommand}"/>
                 <TextBox Grid.Row="0" Grid.Column="1" x:Name="RuleFilePath"   Margin="5,14,10,7"  MinHeight="22" MaxLines="1" VerticalContentAlignment="Center" IsReadOnly="True" Text="{Binding RulePath,Mode=OneWay}"/>
                 <TextBox Grid.Row="1" Grid.Column="1" x:Name="SavePath"       Margin="5,7,10,14"  MinHeight="22" MaxLines="1" VerticalContentAlignment="Center" IsReadOnly="True" Text="{Binding SavePath,Mode=OneWay}"/>

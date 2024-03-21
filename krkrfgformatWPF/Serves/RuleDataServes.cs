@@ -10,21 +10,27 @@ using Newtonsoft.Json;
 
 namespace Li.Krkr.krkrfgformatWPF.Serves
 {
-    public class RuleDataServes
+    public static class RuleDataServes
     {
         public static RuleDataModel CreateFromFile(string file)
         {
-            if (string.IsNullOrEmpty(file)) return null;
-            
-            if (Path.GetExtension(file).ToLower()==".json")
+            if (string.IsNullOrEmpty(file))
+                return null;
+
+            if (Path.GetExtension(file).Equals(".json"))
             {
                 return CreateFromJsonFile(file);
             }
             var fs = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read);
             var br = new BinaryReader(fs);
             var header = br.ReadBytes(5);
-            int index = 0;
-            uint signature = (uint)(header[index] | (header[index + 1] << 8) | (header[index + 2] << 16) | (header[index + 3] << 24));
+            var index = 0;
+            var signature = (uint)(
+                header[index]
+                | (header[index + 1] << 8)
+                | (header[index + 2] << 16)
+                | (header[index + 3] << 24)
+            );
             if ((signature & 0xFF00FFFFu) == 0xFF00FEFEu && header[2] < 3 && 0xFE == header[4])
             {
                 switch (header[2])
@@ -37,9 +43,10 @@ namespace Li.Krkr.krkrfgformatWPF.Serves
                 }
             }
             var encoding = (header[1] == 0) ? Encoding.Unicode : Encoding.UTF8;
-            
+
             return CreateFromTextFile(fs, encoding);
         }
+
         /// <summary>
         /// 解析被简单算法加密的txt文档
         /// </summary>
@@ -75,10 +82,10 @@ namespace Li.Krkr.krkrfgformatWPF.Serves
             fs.Position = 0L;
             using (var streamReader = new StreamReader(fs, encoding))
             {
-                while (streamReader.Peek()>=0)
+                while (streamReader.Peek() >= 0)
                 {
-                    string str = streamReader.ReadLine();
-                    if(!string.IsNullOrEmpty(str))
+                    var str = streamReader.ReadLine();
+                    if (!string.IsNullOrEmpty(str))
                     {
                         lines.Add(str);
                     }
@@ -88,13 +95,14 @@ namespace Li.Krkr.krkrfgformatWPF.Serves
             var data = new RuleDataModel()
             {
                 OriginalFilePath = "",
-                FileHander = lines[0],
-                FgLarge = LineDataModel.CreatFromLineString(lines[1]),
-                TextData = lines.Skip(2).Select(LineDataModel.CreatFromLineString).ToList()
+                FileHead = lines[0],
+                FgLarge = LineDataModel.CreateFromLineString(lines[1]),
+                TextData = lines.Skip(2).Select(LineDataModel.CreateFromLineString).ToList()
             };
             fs.Close();
             return data;
         }
+
         /// <summary>
         /// 解析被ZLIB压缩的文本内容
         /// </summary>
@@ -109,33 +117,39 @@ namespace Li.Krkr.krkrfgformatWPF.Serves
             int b1 = br.ReadByte();
             int b2 = br.ReadByte();
             if ((0x78 != b1 && 0x58 != b1) || 0 != (b1 << 8 | b2) % 31)
-            { throw new InvalidDataException("Data not recoginzed as zlib-compressed stream"); }
+            {
+                throw new InvalidDataException("Data not recoginzed as zlib-compressed stream");
+            }
 
-            
-            using (var deStream = new DeflateStream(new MemoryStream(br.ReadBytes(dataLength - 2)),
-                       CompressionMode.Decompress, true))
+            using (
+                var deStream = new DeflateStream(
+                    new MemoryStream(br.ReadBytes(dataLength - 2)),
+                    CompressionMode.Decompress,
+                    true
+                )
+            )
             using (var sr = new StreamReader(deStream, Encoding.Unicode))
             {
                 while (sr.Peek() >= 0)
                 {
                     var str = sr.ReadLine();
-                    if (!string.IsNullOrEmpty(str)) 
+                    if (!string.IsNullOrEmpty(str))
                         lines.Add(str);
                 }
             }
-            
 
             var data = new RuleDataModel()
             {
                 OriginalFilePath = fs.Name,
-                FileHander = lines[0],
-                FgLarge = LineDataModel.CreatFromLineString(lines[1]),
-                TextData = lines.Skip(2).Select(LineDataModel.CreatFromLineString).ToList()
+                FileHead = lines[0],
+                FgLarge = LineDataModel.CreateFromLineString(lines[1]),
+                TextData = lines.Skip(2).Select(LineDataModel.CreateFromLineString).ToList()
             };
             br.Close();
             fs.Close();
             return data;
         }
+
         /// <summary>
         /// 解析JSON文件
         /// </summary>
@@ -143,16 +157,17 @@ namespace Li.Krkr.krkrfgformatWPF.Serves
         /// <returns></returns>
         private static RuleDataModel CreateFromJsonFile(string file)
         {
-            var array = JsonConvert.DeserializeObject<List<LineDataModel>>(File.ReadAllText(file).Replace("\t", ""));
+            var array = JsonConvert.DeserializeObject<List<LineDataModel>>(
+                File.ReadAllText(file).Replace("\t", "")
+            );
             var data = new RuleDataModel
             {
                 OriginalFilePath = file,
-                FileHander = string.Empty,
+                FileHead = string.Empty,
                 FgLarge = array[0],
                 TextData = array.Skip(1).ToList()
             };
             return data;
         }
-        
     }
 }
